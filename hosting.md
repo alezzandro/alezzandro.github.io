@@ -153,4 +153,5 @@ Now feel free to edit or customize the theme while *jekyll serve* is running, it
 
 If your website is almost complete all you need to do is to start the Github upload process!
 
+Just follow the setup howto on [https://pages.github.com/](https://pages.github.com/) and your website will be up&running in seconds!
 
