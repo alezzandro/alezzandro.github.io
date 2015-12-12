@@ -1,0 +1,43 @@
+---
+layout: post
+title: Two ethernet, same subnet, route to two different gateways
+date: '2014-07-16T11:29:00+02:00'
+tags:
+- iptables
+- ethernet
+- two
+- gateway
+- route
+- forward
+- forwarding
+- routing
+- mark
+- marking
+- address
+- ip
+- mangle
+- rule
+- interfaces
+tumblr_url: http://blog.alezzandro.com/post/91936801238/two-ethernet-same-subnet-route-to-two-different
+---
+<p>Hi there,</p>
+<p>I was not writing here technical tricks for a long time,</p>
+<p>Recently I have to deal with a strange network configuration:</p>
+<p>Two (virtual) ethernet interfaces with ip addresses on the same subnet, but that have to route packets to two different gateways.</p>
+<p>I&rsquo;ve made a schema for better explaining this kind of configuration:</p>
+<p><img src="http://33.media.tumblr.com/03031919b0f174381ea5c772ee7e8fd9/tumblr_inline_n8srzl0vwx1qzn0bt.png"/></p>
+<p>So the simple way to achieve this kind of scenario is using: <strong>iptables</strong>!</p>
+<blockquote>
+<p>ip route flush table 4<br/>ip route flush table 5<br/><span>iptables -t nat -F</span></p>
+<p>iptables -t mangle -F<br/>iptables -F</p>
+<p>ip route add table 4 default via 192.168.241.101</p>
+<p>ip route add table 5 default via 192.168.241.102</p>
+<p>iptables -t mangle -A OUTPUT -p udp -s 192.168.241.98 &ndash;sport 5060 -j MARK &ndash;set-mark 4<br/>iptables -t mangle -A OUTPUT -p udp -s 192.168.241.99 &ndash;sport 5060 -j MARK &ndash;set-mark 5</p>
+<p>ip rule add fwmark 4 table 4<br/>ip rule add fwmark 5 table 5</p>
+<p>ip route flush cache</p>
+</blockquote>
+<p>First of all we flush any previous settings in the affected tables, then we add to table 4 and table 5 the different gateways. After that we use the mangle table of ipfilter framework that let us edit packets marking them with a custom marker. In detail, we&rsquo;ll mark the packets coming from a specific interface&rsquo;s address and from a specific port. By the way you could enlarge this rule as much as you want, removing the port number for example.</p>
+<p>In this case for packets marking we used the same number of the associated table but this is not mandatory!</p>
+<p>After that we add the rule for moving all the packets we&rsquo;ll mark in their respective table. Thanks to this kind of rule we ensure that every marked packet will be forwarded to the respective gateway!</p>
+
+<p>That&rsquo;s all folks! Have fun! :)</p>

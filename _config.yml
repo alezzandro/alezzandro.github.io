@@ -1,0 +1,69 @@
+permalink   : /:title/
+markdown    : kramdown
+highlighter : pygments
+
+paginate: 6
+comments: true
+paginate_path: "/page/:num"
+
+baseurl: "" # change to empty string ""
+domain_name: alezzandro.com
+google_analytics: UA-52446115-1
+
+source: . 
+destination: _site
+
+# cover: /assets/images/header-cover.png
+
+# site title, description, meta_description, meta_keywords
+# Details for the RSS feed generator
+name: Alessandro Arrichiello
+title: "#!/usr/bin/bash"
+description: "Red Hatter, avid swimmer, obstinate dreamer, healthy carrier of joy."
+meta_description: "Red Hatter, avid swimmer, obstinate dreamer, healthy carrier of joy."
+meta_keywords: "site, website, alessandro, frontend, front-end, html5, css3, javascript, jquery, seo, otimizacao, performance"
+url: http://alezzandro,com
+production_url: http://alezzandro.com
+repo: 
+disqus_shortname: "alezzandro"
+rss_path: .
+author:
+  name      : Alessandro Arrichiello
+  image     : http://0.gravatar.com/avatar/6d66df818c00333ba2d3513a1b502610?s=200
+  email     : alezzandro@gmail.com
+  url       : http://alezzandro.com
+  facebook  : http://facebook.com/alessandro.arrichiello
+  twitter   : http://twitter.com/alezzandro1986
+  instagram : 
+  github    : http://github.com/alezzandro
+  linkedin  : http://linkedin.com/in/alessandroarrichiello
+  bio       : "I'm Alessandro Arrichiello, graduated in Computer Engineering at Federico II university of Naples (Master Degree). I am a computer enthusiast, I like to try and study all new types of technologies as can be seen in the archives of my blog."
+
+# thought
+thought:
+  text: Any sufficiently advanced technology is indistinguishable from magic. 
+  author: Arthur Charles Clarke
+
+# Plugin: jekyll-assets
+assets:
+  dirname: /assets
+  baseurl: /assets/ # change to /assets/
+  sources:
+    - assets/images
+    - assets/fonts
+    - assets/css
+    - assets/js
+    - assets/sidebar_images
+  cache: true
+  gzip: [ text/css, application/javascript ]
+
+# Compress HTML
+compress_html:
+  clippings: all
+  comments: all
+  endings: all
+  profile: false
+  ignore:
+    envs: all
+
+exclude: ["gulp", "node_modules", "bower", "bower_components", "config.rb", "src", "Gemfile", "Gemfile.lock", ".rvmrc", ".rbenv-version", "package.json", "gulpfile.js", "README.md", "Rakefile", "changelog.md"]

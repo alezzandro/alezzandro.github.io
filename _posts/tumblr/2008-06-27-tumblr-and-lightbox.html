@@ -1,0 +1,39 @@
+---
+layout: post
+title: Tumblr and Lightbox
+date: '2008-06-27T15:26:00+02:00'
+tags:
+- tumblr
+- lightbox2
+- lightbox
+- image
+- picture
+- photo
+- preview
+- tumble
+- tumblelog
+- api
+- combination
+- integration
+- support
+- wonderful
+- web2.0
+- web
+- '2'
+- textmadebyme
+tumblr_url: http://blog.alezzandro.com/post/40053740/tumblr-and-lightbox
+---
+<p><b>Tumblr</b> and <b>Lightbox2</b> is a very wonderful combination!<br/><br/>from the Author&rsquo;s page ( <a href="http://www.lokeshdhakar.com/projects/lightbox2/" target="_blank">http://www.lokeshdhakar.com/projects/lightbox2/</a> ) : <i><b>Lightbox is a simple, unobtrusive script used to overlay images on the current page. It&rsquo;s a snap to setup and works on all modern browsers.</b></i><br/><br/>You can have an example by clicking on each photo in my tumblelog, (<b>only on photo post</b>, not on all pictures of my blog),<br/><br/><br/>Now I will explain you <b>how to setup it correctly on Tumblr</b>:<br/><br/><b>NOTE^1: Edit the urls respecting the correct path where you&rsquo;ve uploaded the files!</b></p>
+<p><b>NOTE^2: Ensure that you&rsquo;ve uploaded all the needed files!</b></p>
+<p><b>I&rsquo;ve made a list of all the file you must upload:</b></p>
+<p><i>./css:<br/>lightbox.css<br/><br/>./images:<br/>bullet.gif        donate-button.gif loading.gif       thumb-1.jpg<br/>close.gif         download-icon.gif nextlabel.gif<br/>closelabel.gif    image-1.jpg       prevlabel.gif<br/><br/>./js:<br/>builder.js       lightbox.js      scriptaculous.js<br/>effects.js       prototype.js</i></p>
+<p><b>First follow the instruction by Author&rsquo;s page (edited by me for inserting it on Tumblr custom css):</b></p>
+<ol><li><b>Lightbox v2.0 uses the Prototype Framework and Scriptaculous Effects Library. You will need to include these three Javascript files in your header. Between &lt;head&gt; &lt;/head&gt; HTML tags!</b> <br/><i><code>&lt;!-- Start LightBox Javascript --&gt; <br/> &lt;script src="http://www.yourdomain.name/lightbox2/js/prototype.js" type="text/javascript"&gt;&lt;/script&gt; <br/> &lt;script src="http://www.yourdomain.name/lightbox2/js/scriptaculous.js?load=effects,builder" type="text/javascript"&gt;&lt;/script&gt; <br/> &lt;script src="http://www.yourdomain.name/lightbox2/js/lightbox.js" type="text/javascript"&gt;&lt;/script&gt; <br/> &lt;!-- End LightBox Javascript --&gt;</code></i></li>
+<li><b>Include the Lightbox CSS file (or append your active stylesheet with the Lightbox styles).</b> <br/><i><code>&lt;!-- Import LightBox CSS --&gt; <br/> &lt;link rel="stylesheet" href="http://www.yourdomain.com/lightbox2/css/lightbox.css" type="text/css" media="screen" /&gt;</code></i></li>
+<li><b>Edit your css/lightbox.css file:</b> <br/><i><code>#prevLink:hover, #prevLink:visited:hover { background: url(<a href="http://www.yourdomain.com/lightbox2/images/prevlabel.gif" target="_blank">http://www.yourdomain.com/lightbox2/images/prevlabel.gif</a>) left 15% no-repeat; } <br/> #nextLink:hover, #nextLink:visited:hover { background: url(<a href="http://www.yourdomain.com/lightbox2/images/nextlabel.gif" target="_blank">http://www.yourdomain.com/lightbox2/images/nextlabel.gif</a>) right 15% no-repeat; }</code></i></li>
+<li><b>Edit your js/lightbox.js file:</b><br/><i><code>fileLoadingImage: 'http://www.yourdomain.com/lightbox2/images/loading.gif', <br/> fileBottomNavCloseImage: 'http://www.yourdomain.com/lightbox2/images/closelabel.gif',</code></i></li>
+</ol><p><br/><i><b>Now let&rsquo;s start with tumblr integration:</b></i></p>
+<ol><li><b>On the custom CSS form on Tumblr, go to: </b><i>{block:Photo}</i><b> and edit your </b><i>{LinkOpenTag}</i><b> like this:</b><br/><i><code>{LinkOpenTag}&lt;a href="{PhotoURL-500}" rel="lightbox" title="{PhotoAlt}"&gt;&lt;img src="{PhotoURL-400}" alt="{PhotoAlt}"/&gt;&lt;/a&gt;{LinkCloseTag}</code></i></li>
+<li><b>Edit PhotoURL dimensions as you like, you can put values:</b> <i><b>100</b>, <b>250</b>, <b>400</b>, <b>500</b></i>.</li>
+</ol><p>It&rsquo;s all! now you have <b>Tumblr</b>+<b>Lightbox2</b></p>
+<p>if you have problems, write them to me!</p>

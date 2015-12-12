@@ -1,0 +1,51 @@
+---
+layout: post
+title: "[Wi-Fi_UniNa & Android] 4 Dummies [UPDATED_2]"
+date: '2010-07-19T15:14:00+02:00'
+tags:
+- wifi
+- unina
+- android
+- '2.1'
+- eclair
+- howto
+- come
+- fare
+- per
+- collegar
+- rete
+- wireless
+- network
+- textmadebyme
+tumblr_url: http://blog.alezzandro.com/post/831961026/wi-fiunina-android-4-dummies-updated2
+---
+<p>Scrivo questo post visti i tanti problemi legati all'uso della connessione wireless dell'Università Federico II di Napoli con il sistema per dispositivi mobili: Android.</p>
+<p>Ecco il procedimento necessario per il corretto collegamento alla rete wireless <strong>Wi-Fi_Unina*</strong>:</p>
+<ol><li>Scaricare il certificato<strong>**</strong> necessario al collegamento da qui: <a target="_blank" href="http://www.alexworld.it/files/CybertrustEducationalCA.crt">http://www.alexworld.it/files/CybertrustEducationalCA.crt</a></li>
+<li>Visitare la pagina <a target="_blank" href="http://www.realmb.com/droidCert/">http://www.realmb.com/droidCert/</a></li>
+<li>Effettuare l'upload del certificato scaricato su tale sito</li>
+<li>Inserire l'URL fornito dal sito nel browser del cellulare</li>
+<li>Seguire le istruzioni visualizzate a schermo: Inserire una password per il gestore dei certificati, quindi assegnare un nome al certificato che si sta installando</li>
+<li>Collegarsi alla rete Wi-Fi_UniNa cercandola tra le reti disponibili, e limitarsi ad inserire nome utente (comprensivo di @studenti.unina.it) e password SENZA specificare alcun certificato.</li>
+</ol><p>Da questo momento in poi il collegamento potrà avvenire senza alcun problema, talvolta però tale collegamento non sarà automatico ma potrebbe essere richiesto l'inserimento della password specificata per il gestore dei certificati.</p>
+<p><strong>* NB: tale procedimento è stato testato esclusivamente su Android 2.1 (Eclair) e su dispositivo Acer Liquid S100, l'autore non garantisce il funzionamento su dispositivi differenti.</strong></p>
+<p><strong>** NB: tale certificato è stato prelevato dal sito docenti.unina.it ed è quindi di  dominio pubblico, l'autore di questo post non vuole violare alcun copyright rendendolo disponibile ma solo facilitare il collegamento alla  rete dell'università suddetta.</strong></p>
+<p>Per qualsiasi altra informazione contattatemi via posta o tramite la discussione su Android-dev.it (<a target="_blank" href="http://forum.android-dev.it/post13904.html">http://forum.android-dev.it/post13904.html</a>).</p>
+<p><strong>[EDIT_1]</strong></p>
+<p>Come mi è stato richiesto pubblico i file di configurazione salvati nel telefono dopo un corretto collegamento alla rete wireless dell'università.</p>
+<p>/data/misc/wifi/wpa.conf : <a href="http://www.alexworld.it/files/data-misc-wifi-wpa.conf" target="_blank">http://www.alexworld.it/files/data-misc-wifi-wpa.conf</a></p>
+<p>/system/etc/wifi/wpa_supplicant.conf : <a href="http://www.alexworld.it/files/system-etc-wifi-wpa_supplicant.conf" target="_blank">http://www.alexworld.it/files/system-etc-wifi-wpa_supplicant.conf</a></p>
+<p>/system/etc/wifi/wifi.conf : <a href="http://www.alexworld.it/files/system-etc-wifi-wifi.conf" target="_blank">http://www.alexworld.it/files/system-etc-wifi-wifi.conf</a></p>
+<p><strong>[/EDIT_1]</strong></p>
+<p><strong>[EDIT_2]</strong></p>
+<p>Ritorno a scrivere in questo post per aggiungere che dalla versione Android 2.2 (Froyo) per Acer Liquid con custom ROM LCR-F_1.0 non è più necessario seguire la procedura precedente e installare il certificato. <em>(POTREBBE FUNZIONARE ANCHE CON Android2.&frac12;.2 SU ALTRI DISPOSITIVI)</em></p>
+<p>Basta eseguire i seguenti passaggi:</p>
+<p><strong>0)</strong> Se avete già installato il certificato eliminatelo (non è necessario), andando in: &ldquo;Impostazioni-&gt;Posizione e protezione-&gt;Cancella archivio&quot; </p>
+<p><strong>1)</strong> All'università effettuate la scansione delle reti e collegatevi alla rete Wi-Fi_UniNa cercandola tra le reti disponibili e limitatevi ad inserire nome utente (comprensivo di @studenti.unina.it) e password SENZA specificare alcun certificato, con autenticazione: &quot;MSCHAPV2&rdquo;.</p>
+<p><strong>2)</strong> Una volta salvata la configurazione il telefono proverà a connettersi senza riuscirci.</p>
+<p><strong>3)</strong> Dopo aver constatato che il telefono non riesce a connettersi (Connessione in corso..-&gt;Disconnesso) modificate la rete Wi-Fi_UniNa appena aggiunta e riscrivete la password (anche se l'avete già scritta).</p>
+<p><strong>4)</strong> Adesso dovrebbe connettersi correttamente.</p>
+<p><strong>[/EDIT_2]</strong></p>
+<p><strong><br/></strong></p>
+<p><em><strong>Saluti,</strong></em></p>
+<p><em><strong>Alessandro Arrichiello.</strong></em></p>

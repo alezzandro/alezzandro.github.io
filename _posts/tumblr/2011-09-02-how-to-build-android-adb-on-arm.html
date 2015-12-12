@@ -1,0 +1,18 @@
+---
+layout: post
+title: How to build Android adb on ARM
+date: '2011-09-02T17:25:54+02:00'
+tags:
+- textmadebyme
+tumblr_url: http://blog.alezzandro.com/post/9707276488/how-to-build-android-adb-on-arm
+---
+<p>Thanks to Google I&rsquo;ve just found searching in many Forum threads the way to build adb on ARM arch.<br/>Just download sources with git (apt-get install git-core on debian-like system):<br/></p><blockquote>$ git clone git://android.git.kernel.org/platform/system/core.git system/core<br/>$ git clone git://android.git.kernel.org/platform/build.git build<br/>$ git clone git://android.git.kernel.org/platform/external/zlib.git external/zlib<br/>$ git clone git://android.git.kernel.org/platform/bionic.git bionic<br/></blockquote>
+<br/>Now edit build/core/main.mk and comment out the parts labelled
+<blockquote># Check for the correct version of java</blockquote>
+and
+<blockquote># Check for the correct version of javac</blockquote>
+Since adb doesn&rsquo;t need Java, these checks are unnecessary.<br/>Also edit build/target/product/sdk.mk and comment out the &ldquo;include&rdquo; lines after
+<blockquote># include available languages for TTS in the system image</blockquote>
+This avoids having to download language files that aren&rsquo;t needed for adb. <br/><br/>Save this Makefile as system/core/adb/Makefile : <a href="https://gist.github.com/958335" target="_blank">https://gist.github.com/958335</a><br/>Then just run:
+<blockquote>cd system/core/adb; make</blockquote>
+<br/>Then you can copy and use your adb binary.<br/>That&rsquo;s all! If you have any problems search your distro&rsquo;s packages repository to install needed packages!<br/>:-) <br/>URL:<br/><a href="http://lackingrhoticity.blogspot.com/2010/02/how-to-build-adb-android-debugger.html" target="_blank">http://lackingrhoticity.blogspot.com/2010/02/how-to-build-adb-android-debugger.html</a><br/><a href="http://stackoverflow.com/questions/5904765/build-android-adb-for-arm-processor" target="_blank">http://stackoverflow.com/questions/5904765/build-android-adb-for-arm-processor</a>

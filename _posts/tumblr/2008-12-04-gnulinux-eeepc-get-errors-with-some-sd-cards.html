@@ -1,0 +1,36 @@
+---
+layout: post
+title: Gnu/Linux - eeepc get errors with some sd cards
+date: '2008-12-04T18:26:45+01:00'
+tags:
+- gnu
+- linux
+- eeepc
+- asus
+- eee
+- sd
+- card
+- bios
+- error
+- io
+- i/o
+- device
+- sdb
+- ubuntu
+- textmadebyme
+tumblr_url: http://blog.alezzandro.com/post/63035571/gnulinux-eeepc-get-errors-with-some-sd-cards
+---
+<p><img src="http://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Secure_Digital_Kingston_512MB.jpg/100px-Secure_Digital_Kingston_512MB.jpg"/></p>
+<p><b>Hello, maybe if you have an Asus eeepc this can sound familiar:</b></p>
+<blockquote>
+<p>[ 2948.736927] sd 2:0:0:0: [sdb] 1984000 512-byte hardware sectors (1016 MB)<br/> [ 2948.741932] sd 2:0:0:0: [sdb] Write Protect is off<br/> [ 2948.741951] sd 2:0:0:0: [sdb] Mode Sense: 03 00 00 00<br/> [ 2948.741959] sd 2:0:0:0: [sdb] Assuming drive cache: write through<br/> [ 2948.751918] sd 2:0:0:0: [sdb] 1984000 512-byte hardware sectors (1016 MB)<br/> [ 2948.754938] sd 2:0:0:0: [sdb] Write Protect is off<br/> [ 2948.754957] sd 2:0:0:0: [sdb] Mode Sense: 03 00 00 00<br/> [ 2948.754964] sd 2:0:0:0: [sdb] Assuming drive cache: write through<br/> [ 2948.754980]  sdb: sdb1<br/> [ 2984.386913] sd 2:0:0:0: [sdb] Device not ready: Sense Key : Not Ready [current]<br/> [ 2984.386941] sd 2:0:0:0: [sdb] Device not ready: Add. Sense: Medium not present<br/> [ 2984.386959] end_request: I/O error, dev sdb, sector 1983984<br/> [ 2984.386975] Buffer I/O error on device sdb, logical block 247998<br/> [ 2984.407911] sd 2:0:0:0: [sdb] Device not ready: Sense Key : Not Ready [current]<br/> [ 2984.407936] sd 2:0:0:0: [sdb] Device not ready: Add. Sense: Medium not present<br/> [ 2984.407953] end_request: I/O error, dev sdb, sector 1983984<br/> [ 2984.407966] Buffer I/O error on device sdb, logical block 247998<br/> [ 2984.408153] Buffer I/O error on device sdb, logical block 0<br/> [ 2984.408186] Buffer I/O error on device sdb, logical block 0<br/> [ 2984.408229] Buffer I/O error on device sdb, logical block 0<br/> [ 2984.408296] Buffer I/O error on device sdb, logical block 247999<br/> [ 2984.408341] Buffer I/O error on device sdb, logical block 247999<br/> [ 2984.408382] Buffer I/O error on device sdb, logical block 247999<br/> [ 2984.408421] Buffer I/O error on device sdb, logical block 247999</p>
+</blockquote>
+<p>What?? Are you going crazy with some SD CARDS?</p>
+<p>Cannot you mount them an dmesg shows you something like previous logfile?</p>
+<p>Don&rsquo;t worry man, the soution is very simple:</p>
+<blockquote>
+<p><b>reboot your eeepc, press F2 to enter BIOS and set the Variable: &ldquo;<i>OS Installation</i>&rdquo; to: [<i>Finished</i>].</b></p>
+</blockquote>
+<p>That&rsquo;s all, all of your sd cards will begin to work without any problems!</p>
+
+<p><i><b>see you!</b></i></p>

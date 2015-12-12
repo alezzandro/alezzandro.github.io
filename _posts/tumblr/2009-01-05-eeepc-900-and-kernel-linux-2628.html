@@ -1,0 +1,25 @@
+---
+layout: post
+title: eeepc 900 and kernel linux 2.6.28
+date: '2009-01-05T11:49:00+01:00'
+tags:
+- debian
+- ubuntu
+- linux
+- kernel
+- 2.6.28
+- eeepc
+- '900'
+- hardware
+- support
+- textmadebyme
+tumblr_url: http://blog.alezzandro.com/post/68360395/eeepc-900-and-kernel-linux-2628
+---
+<p><img src="http://farm4.static.flickr.com/3129/2714409013_3a00a2bf4a.jpg" height="292" width="277"/></p>
+<blockquote>alex@dothan:~$ uname -a<br/>Linux dothan 2.6.28-dothan #2 SMP Sun Jan 4 19:04:50 CET 2009 i686 GNU/Linux<br/>alex@dothan:~$ cat /proc/cpuinfo <br/>processor    : 0<br/>vendor_id    : GenuineIntel<br/>cpu family    : 6<br/>model        : 13<br/>model name    : Intel&reg; Celeron&reg; M processor          900MHz<br/>stepping    : 8<br/>cpu MHz        : 900.000<br/>cache size    : 512 KB<br/>fdiv_bug    : no<br/>hlt_bug        : no<br/>f00f_bug    : no<br/>coma_bug    : no<br/>fpu        : yes<br/>fpu_exception    : yes<br/>cpuid level    : 2<br/>wp        : yes<br/>flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat clflush dts acpi mmx fxsr sse sse2 ss tm pbe nx up bts<br/>bogomips    : 1800.02<br/>clflush size    : 64<br/>power management:<br/></blockquote>
+<p>It&rsquo;s all ok!!</p>
+<p>all works ok, kernel 2.6.28 gives you full support to your eeepc 900 hardware without any type of patch!</p>
+<p>You have only to update xserver-xorg-synaptics to the latest version: 0.99.* otherwise you won&rsquo;t have the complete touchpad support (by elantech driver included in the kernel).</p>
+<p><i>you can find </i>xserver-xorg-synaptics <i>debian packages here: <b><a href="http://alioth.debian.org/~dsalt-guest/eee/" target="_blank">http://alioth.debian.org/~dsalt-guest/eee/</a></b><br/></i></p>
+<p>elantech driver<i> official website: <b><a href="http://arjan.opmeer.net/elantech/" target="_blank">http://arjan.opmeer.net/elantech/</a></b></i></p>
+<p>Goodbye,</p>

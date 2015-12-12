@@ -1,0 +1,16 @@
+---
+layout: post
+title: 'Fast #Kamailio deployment using #Docker'
+date: '2015-03-02T20:39:24+01:00'
+tags:
+- docker
+- kamailio
+- sip
+- server
+- git
+- github
+- dockerhub
+- script
+tumblr_url: http://blog.alezzandro.com/post/112533470033/fast-kamailio-deployment-using-docker
+---
+<p>Some days ago I&rsquo;ve published on Github a Dockerfile for faster deploying Kamailio SIP server using Docker&rsquo;s containers.</p><p>Dockerfile is really simple and it consists of some actions for getting the latest repo file and install kamailio using Fedora&rsquo;s default package manager: yum.</p><p>Oh.. yes I&rsquo;ve used as base image a Fedora container. :)</p><p>Finally I&rsquo;ve exposed standard SIP server port 5060 for planning additional connections with other containers.</p><p>At the end of the Dockerfile you&rsquo;ll find the default command to run while starting the container.</p><p>Github url: <br/><a href="https://github.com/alezzandro/docker-kamailio" target="_blank">https://github.com/alezzandro/docker-kamailio</a></p><p>DockerHub url: <br/><a href="https://registry.hub.docker.com/u/alezzandro/kamailio-latest-stable/" target="_blank">https://registry.hub.docker.com/u/alezzandro/kamailio-latest-stable/</a></p><p>I&rsquo;m also planning to run a cron job for periodic checks on the latest repo url file to use as source.</p><p>I&rsquo;ve already started developing a little script file for parsing kamailio&rsquo;s root url and grepping the latest repo url.</p><p>Probably soon I will place it on my server pushing the new repo url on Github when it will be available. The git push willl trigger DockerHub that will pull down the updated repo for building up an updated docker container! 8-)</p>

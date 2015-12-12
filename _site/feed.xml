@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>#!/usr/bin/bash</title>
+    <description>Red Hatter, avid swimmer, obstinate dreamer, healthy carrier of joy.</description>
+    <link>http://alezzandro,com/</link>
+    <atom:link href="http://alezzandro,com/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Sat, 12 Dec 2015 10:40:55 +0100</pubDate>
+    <lastBuildDate>Sat, 12 Dec 2015 10:40:55 +0100</lastBuildDate>
+    <generator>Jekyll v2.5.3</generator>
+    
+      <item>
+        <title>Fast #Kamailio deployment using #Docker</title>
+        <description>&lt;p&gt;Some days ago I&amp;rsquo;ve published on Github a Dockerfile for faster deploying Kamailio SIP server using Docker&amp;rsquo;s containers.&lt;/p&gt;&lt;p&gt;Dockerfile is really simple and it consists of some actions for getting the latest repo file and install kamailio using Fedora&amp;rsquo;s default package manager: yum.&lt;/p&gt;&lt;p&gt;Oh.. yes I&amp;rsquo;ve used as base image a Fedora container. :)&lt;/p&gt;&lt;p&gt;Finally I&amp;rsquo;ve exposed standard SIP server port 5060 for planning additional connections with other containers.&lt;/p&gt;&lt;p&gt;At the end of the Dockerfile you&amp;rsquo;ll find the default command to run while starting the container.&lt;/p&gt;&lt;p&gt;Github url: &lt;br/&gt;&lt;a href=&quot;https://github.com/alezzandro/docker-kamailio&quot; target=&quot;_blank&quot;&gt;https://github.com/alezzandro/docker-kamailio&lt;/a&gt;&lt;/p&gt;&lt;p&gt;DockerHub url: &lt;br/&gt;&lt;a href=&quot;https://registry.hub.docker.com/u/alezzandro/kamailio-latest-stable/&quot; target=&quot;_blank&quot;&gt;https://registry.hub.docker.com/u/alezzandro/kamailio-latest-stable/&lt;/a&gt;&lt;/p&gt;&lt;p&gt;I&amp;rsquo;m also planning to run a cron job for periodic checks on the...</description>
+        <pubDate>Mon, 02 Mar 2015 20:39:24 +0100</pubDate>
+        <link>http://alezzandro,com/fast-kamailio-deployment-using-docker/</link>
+        <guid isPermaLink="true">http://alezzandro,com/fast-kamailio-deployment-using-docker/</guid>
+        
+        <category>docker</category>
+        
+        <category>kamailio</category>
+        
+        <category>sip</category>
+        
+        <category>server</category>
+        
+        <category>git</category>
+        
+        <category>github</category>
+        
+        <category>dockerhub</category>
+        
+        <category>script</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>How to move VMware ESXi VM to new datastore using vmkfstools</title>
+        <description>&lt;p&gt;After replacing or upgrading some storage on your VMware ESXi server it could be useful or mandatory to move some VM to a new datastore.&lt;/p&gt; &lt;p&gt;The process is not too complex but it requires some explanation:&lt;/p&gt; &lt;ul&gt;&lt;li&gt;Power off VM&lt;/li&gt; &lt;li&gt;(Optional) &lt;a href=&quot;http://kb.vmware.com/selfservice/microsites/search.do?language=en_US&amp;amp;cmd=displayKC&amp;amp;externalId=2003638&quot; target=&quot;_blank&quot;&gt;Consolidate snapshots if needed.&lt;/a&gt;&lt;/li&gt; &lt;li&gt;Remove VM from vCenter inventory &lt;ul&gt;&lt;li&gt;Right click VM and click &amp;ldquo;Remove from Inventory&amp;quot; &lt;img alt=&quot;enter image description here&quot; src=&quot;http://i.stack.imgur.com/vrAbv.png&quot;/&gt;&lt;/li&gt; &lt;/ul&gt;&lt;/li&gt; &lt;li&gt;Enable SSH on the ESXi machine &lt;ul&gt;&lt;li&gt;In the vSphere client go to: &lt;em&gt;Configuration -&amp;gt; Security profile -&amp;gt; Properties&lt;/em&gt; (next to Services) &lt;em&gt;-&amp;gt; SSH&lt;/em&gt; (in the list) &lt;em&gt;-&amp;gt; Options -&amp;gt; Start&lt;/em&gt;&lt;/li&gt; &lt;/ul&gt;&lt;/li&gt; &lt;li&gt;Log in via SSH as root&lt;/li&gt; &lt;li&gt;Prepare a directory on...</description>
+        <pubDate>Tue, 16 Dec 2014 12:00:45 +0100</pubDate>
+        <link>http://alezzandro,com/how-to-move-vmware-esxi-vm-to-new-datastore-using/</link>
+        <guid isPermaLink="true">http://alezzandro,com/how-to-move-vmware-esxi-vm-to-new-datastore-using/</guid>
+        
+        <category>vm</category>
+        
+        <category>vmware</category>
+        
+        <category>esxi</category>
+        
+        <category>datastore</category>
+        
+        <category>move</category>
+        
+        <category>relocate</category>
+        
+        <category>ssh</category>
+        
+        <category>vmdk</category>
+        
+        <category>vmfs</category>
+        
+        <category>inventory</category>
+        
+        <category>vsphere</category>
+        
+        <category>vmkfstools</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>How to add a new array on VMware ESXi 5.5 using hpacucli / hpssacli</title>
+        <description>&lt;p&gt;Hi there,&lt;/p&gt; &lt;p&gt;If you&amp;rsquo;re lucky enough to configure an HP proliant server from scratch or simply you&amp;rsquo;re ready to upgrade or replace some storage on your server maybe you&amp;rsquo;ll need some of these tricky advices!&lt;/p&gt; &lt;p&gt;&lt;img alt=&quot;image&quot; src=&quot;http://product-images.www8-hp.com/digmedialib/prodimg/lowres/c03120597.png&quot;/&gt;&lt;/p&gt; &lt;p&gt;First of all we have to install the necessary utilities in our VMware ESXi server, so go to the page:&lt;/p&gt; &lt;p&gt;&lt;a href=&quot;https://h20566.www2.hp.com/hpsc/swd/public/detail?swItemId=MTX_34bf1c20447146c6b77b845a00&quot; target=&quot;_blank&quot;&gt;https://h20566.www2.hp.com/hpsc/swd/public/detail?swItemId=MTX_34bf1c20447146c6b77b845a00&lt;/a&gt;&lt;/p&gt; &lt;p&gt;After downloading the right package we have to upload it to the ESXi server and install it using the command from ssh:&lt;/p&gt; &lt;blockquote&gt; &lt;p&gt;&lt;span&gt;esxcli software vib install -d “/vmfs/volumes/&lt;/span&gt;&lt;em&gt;Datastore&lt;/em&gt;&lt;span&gt;/&lt;/span&gt;&lt;em&gt;DirectoryName&lt;/em&gt;&lt;span&gt;/&lt;/span&gt;&lt;em&gt;&lt;span class=&quot;skimlinks-unlinked&quot;&gt;Package.zip&lt;/span&gt;&lt;/em&gt;&lt;span&gt;“&lt;/span&gt;&lt;/p&gt; &lt;/blockquote&gt; &lt;p&gt;I suggest you to upload it to an...</description>
+        <pubDate>Tue, 16 Dec 2014 11:48:22 +0100</pubDate>
+        <link>http://alezzandro,com/how-to-add-a-new-array-on-vmware-esxi-55-using/</link>
+        <guid isPermaLink="true">http://alezzandro,com/how-to-add-a-new-array-on-vmware-esxi-55-using/</guid>
+        
+        <category>hp</category>
+        
+        <category>proliant</category>
+        
+        <category>vmware</category>
+        
+        <category>esxi</category>
+        
+        <category>array</category>
+        
+        <category>controller</category>
+        
+        <category>disk</category>
+        
+        <category>storage</category>
+        
+        <category>hpacucli</category>
+        
+        <category>hpssacli</category>
+        
+        <category>physical</category>
+        
+        <category>drive</category>
+        
+        <category>install</category>
+        
+        <category>add</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>How To Clone Vagrant Virtual Machines</title>
+        <description>&lt;p&gt;Hi there,&lt;/p&gt; &lt;p&gt;I want to show to anyone who&amp;rsquo;ll need it, how I managed to clone a Vagrant virtual machine using VirtualBox and some XML editing.&lt;/p&gt; &lt;p&gt;First of all ensure that you can access to you Vagrant-vm also with user and password (not only by public/private key files). You should try using vagrant/vagrant that should be the default credentials.&lt;/p&gt; &lt;p&gt;By the way if you can&amp;rsquo;t find username and password you can always change the password for &amp;ldquo;vagrant&amp;rdquo; user.&lt;/p&gt; &lt;p&gt;After that when you&amp;rsquo;re ready to clone, open Virtualbox, right click on your Vagrant vm (you should recognize it by the name,...</description>
+        <pubDate>Mon, 04 Aug 2014 15:54:08 +0200</pubDate>
+        <link>http://alezzandro,com/how-to-clone-vagrant-virtual-machines/</link>
+        <guid isPermaLink="true">http://alezzandro,com/how-to-clone-vagrant-virtual-machines/</guid>
+        
+        <category>vagrant</category>
+        
+        <category>vm</category>
+        
+        <category>virtual machine</category>
+        
+        <category>virtualbox</category>
+        
+        <category>clone</category>
+        
+        <category>xml</category>
+        
+        <category>liked</category>
+        
+        <category>full</category>
+        
+        <category>vbox</category>
+        
+        <category>intercace</category>
+        
+        <category>eth0</category>
+        
+        <category>ethernet</category>
+        
+        <category>sysconfig</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>Two ethernet, same subnet, route to two different gateways</title>
+        <description>&lt;p&gt;Hi there,&lt;/p&gt; &lt;p&gt;I was not writing here technical tricks for a long time,&lt;/p&gt; &lt;p&gt;Recently I have to deal with a strange network configuration:&lt;/p&gt; &lt;p&gt;Two (virtual) ethernet interfaces with ip addresses on the same subnet, but that have to route packets to two different gateways.&lt;/p&gt; &lt;p&gt;I&amp;rsquo;ve made a schema for better explaining this kind of configuration:&lt;/p&gt; &lt;p&gt;&lt;img src=&quot;http://33.media.tumblr.com/03031919b0f174381ea5c772ee7e8fd9/tumblr_inline_n8srzl0vwx1qzn0bt.png&quot;/&gt;&lt;/p&gt; &lt;p&gt;So the simple way to achieve this kind of scenario is using: &lt;strong&gt;iptables&lt;/strong&gt;!&lt;/p&gt; &lt;blockquote&gt; &lt;p&gt;ip route flush table 4&lt;br/&gt;ip route flush table 5&lt;br/&gt;&lt;span&gt;iptables -t nat -F&lt;/span&gt;&lt;/p&gt; &lt;p&gt;iptables -t mangle -F&lt;br/&gt;iptables -F&lt;/p&gt; &lt;p&gt;ip route add table 4 default via 192.168.241.101&lt;/p&gt; &lt;p&gt;ip route add table...</description>
+        <pubDate>Wed, 16 Jul 2014 11:29:00 +0200</pubDate>
+        <link>http://alezzandro,com/two-ethernet-same-subnet-route-to-two-different/</link>
+        <guid isPermaLink="true">http://alezzandro,com/two-ethernet-same-subnet-route-to-two-different/</guid>
+        
+        <category>iptables</category>
+        
+        <category>ethernet</category>
+        
+        <category>two</category>
+        
+        <category>gateway</category>
+        
+        <category>route</category>
+        
+        <category>forward</category>
+        
+        <category>forwarding</category>
+        
+        <category>routing</category>
+        
+        <category>mark</category>
+        
+        <category>marking</category>
+        
+        <category>address</category>
+        
+        <category>ip</category>
+        
+        <category>mangle</category>
+        
+        <category>rule</category>
+        
+        <category>interfaces</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>finally its here webrtc blueprints the book i</title>
+        <description>&lt;img src=&quot;/tumblr_files/tumblr_n8e1b0xZMC1qzn7slo1_1280.jpg&quot;/&gt;&lt;br/&gt;&lt;p&gt;Finally it&amp;rsquo;s here! WebRTC Blueprints! The book I reviewed! =)&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;http://www.packtpub.com/webrtc-blueprints/book&quot; target=&quot;_blank&quot;&gt;http://www.packtpub.com/webrtc-blueprints/book&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Tue, 08 Jul 2014 12:04:12 +0200</pubDate>
+        <link>http://alezzandro,com/finally-its-here-webrtc-blueprints-the-book-i/</link>
+        <guid isPermaLink="true">http://alezzandro,com/finally-its-here-webrtc-blueprints-the-book-i/</guid>
+        
+        <category>webrtc</category>
+        
+        <category>book</category>
+        
+        <category>tech</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>Oracle Database 11g installation&#39;s story</title>
+        <description>&lt;p&gt;Today I&amp;rsquo;ve experimented installing Oracle Database 11g,&lt;/p&gt; &lt;p&gt;After unsuccessful installation on debian-based system because of wrong path, missing packages, etc. I&amp;rsquo;ve tried using Fedora 18, one of most compatible linux distro thanks its own derivation by RedHat Linux, certified working by Oracle.&lt;/p&gt; &lt;p&gt;I&amp;rsquo;ve installed it over a virtual machine (VBox based) through Fedora 18 XFCE edition thanks this how-to: &lt;a href=&quot;http://www.oracle-base.com/articles/11g/oracle-db-11gr2-installation-on-fedora-18.php&quot; target=&quot;_blank&quot;&gt;http://www.oracle-base.com/articles/11g/oracle-db-11gr2-installation-on-fedora-18.php&lt;/a&gt;&lt;/p&gt; &lt;p&gt;The process is very linear but not painless :-p I suggest you to follow the how-to as much as you can but trying avoiding the passes regarding &amp;ldquo;Packages Groups&amp;rdquo; suggested by the author.&lt;/p&gt; &lt;p&gt;The installation could stop sometimes because...</description>
+        <pubDate>Wed, 26 Jun 2013 20:01:44 +0200</pubDate>
+        <link>http://alezzandro,com/oracle-database-11g-installations-story/</link>
+        <guid isPermaLink="true">http://alezzandro,com/oracle-database-11g-installations-story/</guid>
+        
+        <category>textmadebyme</category>
+        
+        <category>fedora</category>
+        
+        <category>fedora 18</category>
+        
+        <category>oracle</category>
+        
+        <category>virtualbox</category>
+        
+        <category>oracle database</category>
+        
+        <category>oracle 11g</category>
+        
+        <category>linux</category>
+        
+        <category>debian</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>15 interesting and extremely helpful #Linux CLI tricks</title>
+        <description>&lt;a href=&quot;https://57un.wordpress.com/2013/04/29/15-interesting-and-extremely-helpful-linux-cli-tricks/&quot;&gt;15 interesting and extremely helpful #Linux CLI tricks&lt;/a&gt;&lt;br/&gt;&lt;p&gt;Davvero interessante! :)&lt;/p&gt;
+</description>
+        <pubDate>Tue, 11 Jun 2013 16:34:41 +0200</pubDate>
+        <link>http://alezzandro,com/15-interesting-and-extremely-helpful-linux-cli/</link>
+        <guid isPermaLink="true">http://alezzandro,com/15-interesting-and-extremely-helpful-linux-cli/</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>epic fail ubuntu piace ma per i driver cè da</title>
+        <description>&lt;img src=&quot;/tumblr_files/tumblr_mlpzdvrYEs1qzn7slo1_1280.png&quot;/&gt;&lt;br/&gt;&lt;h1&gt;Epic Fail - Ubuntu piace ma per i driver c&#39;è da soffrire&lt;/h1&gt;
+</description>
+        <pubDate>Tue, 23 Apr 2013 20:01:06 +0200</pubDate>
+        <link>http://alezzandro,com/epic-fail-ubuntu-piace-ma-per-i-driver-c%C3%A8-da/</link>
+        <guid isPermaLink="true">http://alezzandro,com/epic-fail-ubuntu-piace-ma-per-i-driver-c%C3%A8-da/</guid>
+        
+        <category>ubuntu</category>
+        
+        <category>linux</category>
+        
+        <category>driver</category>
+        
+        <category>epic</category>
+        
+        <category>fail</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>spotify infographic</title>
+        <description>&lt;img src=&quot;/tumblr_files/tumblr_miboi4y96k1qzn7slo1_1280.png&quot;/&gt;&lt;br/&gt;&lt;p&gt;Spotify Infographic&lt;/p&gt;
+</description>
+        <pubDate>Sat, 16 Feb 2013 17:58:52 +0100</pubDate>
+        <link>http://alezzandro,com/spotify-infographic/</link>
+        <guid isPermaLink="true">http://alezzandro,com/spotify-infographic/</guid>
+        
+        <category>spotify</category>
+        
+        <category>infographic</category>
+        
+        
+      </item>
+    
+  </channel>
+</rss>

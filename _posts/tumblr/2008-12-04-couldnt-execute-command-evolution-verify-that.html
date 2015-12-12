@@ -1,0 +1,33 @@
+---
+layout: post
+title: couldnt execute command evolution verify that
+date: '2008-12-04T09:39:43+01:00'
+tags:
+- evolution
+- ac
+- plug
+- 'on'
+- acpi
+- script
+- chmod
+- ubuntu
+- linux
+- eee
+- eeepc
+- corrente
+- alimentazione
+- photomadebyme
+tumblr_url: http://blog.alezzandro.com/post/62966779/couldnt-execute-command-evolution-verify-that
+---
+<img src="/tumblr_files/yKwl6EeNih2pc0yz4QSlN7Aoo1_400.jpg"/><br/><blockquote>
+<p><i>Couldn&rsquo;t execute command: evolution <br/>Verify that this is a valid command.</i></p>
+</blockquote>
+<p><br/>This is what you can see if you&rsquo;ve removed evolution from your ubuntu distro and it will appear every time you&rsquo;ve plugged in the AC of your notebook.</p>
+<p>You can simply avoid this problem by remove execute permission to the script file responsable of this action:</p>
+<blockquote>
+
+<p><i>root@dothan:/# <b>chmod -x /etc/acpi/mailbtn.sh</b></i></p>
+<p><i><b><br/></b></i></p>
+</blockquote>
+<p>If you have evolution installed, you can also do this command to avoid to launch it every time you will plug AC on your notebook.</p>
+<p>gbye,</p>

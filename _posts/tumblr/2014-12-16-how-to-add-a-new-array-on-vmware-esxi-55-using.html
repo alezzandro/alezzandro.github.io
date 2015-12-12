@@ -1,0 +1,53 @@
+---
+layout: post
+title: How to add a new array on VMware ESXi 5.5 using hpacucli / hpssacli
+date: '2014-12-16T11:48:22+01:00'
+tags:
+- hp
+- proliant
+- vmware
+- esxi
+- array
+- controller
+- disk
+- storage
+- hpacucli
+- hpssacli
+- physical
+- drive
+- install
+- add
+tumblr_url: http://blog.alezzandro.com/post/105345177333/how-to-add-a-new-array-on-vmware-esxi-55-using
+---
+<p>Hi there,</p>
+<p>If you&rsquo;re lucky enough to configure an HP proliant server from scratch or simply you&rsquo;re ready to upgrade or replace some storage on your server maybe you&rsquo;ll need some of these tricky advices!</p>
+<p><img alt="image" src="http://product-images.www8-hp.com/digmedialib/prodimg/lowres/c03120597.png"/></p>
+<p>First of all we have to install the necessary utilities in our VMware ESXi server, so go to the page:</p>
+<p><a href="https://h20566.www2.hp.com/hpsc/swd/public/detail?swItemId=MTX_34bf1c20447146c6b77b845a00" target="_blank">https://h20566.www2.hp.com/hpsc/swd/public/detail?swItemId=MTX_34bf1c20447146c6b77b845a00</a></p>
+<p>After downloading the right package we have to upload it to the ESXi server and install it using the command from ssh:</p>
+<blockquote>
+<p><span>esxcli software vib install -d “/vmfs/volumes/</span><em>Datastore</em><span>/</span><em>DirectoryName</em><span>/</span><em><span class="skimlinks-unlinked">Package.zip</span></em><span>“</span></p>
+</blockquote>
+<p>I suggest you to upload it to an existing Datastore or simply using sftp.</p>
+<p>Finally reboot the server.</p>
+<p>After that we have to test if the storage we installed is correclty recognized by our server, so launch the command:</p>
+<blockquote>
+<p>/opt/hp/hpacucli/bin/hpacucli</p>
+</blockquote>
+<p>Please note that on most recent HP server the utility named hpssacli will not work, you have to use hpacucli instead.</p>
+<p>A command line tool should bring up, after that execute the following command to list the available controllers:</p>
+<blockquote>
+<p>controller show all</p>
+</blockquote>
+<p>Then for listing all the available drives connected to a controller, execute:</p>
+<blockquote>
+<p>ctrl slot=1 physicaldrive</p>
+</blockquote>
+<p>Previous command will list all the physical drives with their respective ids.</p>
+<p>Now for creating a new array simply use this command:</p>
+<blockquote>
+<p> ctrl slot=_slot_num_  create type=ld drives=drives_ids_list_comma_separated</p>
+</blockquote>
+<p>Please note this command is partial and you should edit it according to your requirements. For more information refer to the manual.</p>
+
+<p>That&rsquo;s all! Have a nice day.</p>

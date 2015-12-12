@@ -1,0 +1,51 @@
+---
+layout: post
+title: How to move VMware ESXi VM to new datastore using vmkfstools
+date: '2014-12-16T12:00:45+01:00'
+tags:
+- vm
+- vmware
+- esxi
+- datastore
+- move
+- relocate
+- ssh
+- vmdk
+- vmfs
+- inventory
+- vsphere
+- vmkfstools
+tumblr_url: http://blog.alezzandro.com/post/105345543658/how-to-move-vmware-esxi-vm-to-new-datastore-using
+---
+<p>After replacing or upgrading some storage on your VMware ESXi server it could be useful or mandatory to move some VM to a new datastore.</p>
+<p>The process is not too complex but it requires some explanation:</p>
+<ul><li>Power off VM</li>
+<li>(Optional) <a href="http://kb.vmware.com/selfservice/microsites/search.do?language=en_US&amp;cmd=displayKC&amp;externalId=2003638" target="_blank">Consolidate snapshots if needed.</a></li>
+<li>Remove VM from vCenter inventory
+<ul><li>Right click VM and click &ldquo;Remove from Inventory&quot; <img alt="enter image description here" src="http://i.stack.imgur.com/vrAbv.png"/></li>
+</ul></li>
+<li>Enable SSH on the ESXi machine
+<ul><li>In the vSphere client go to: <em>Configuration -&gt; Security profile -&gt; Properties</em> (next to Services) <em>-&gt; SSH</em> (in the list) <em>-&gt; Options -&gt; Start</em></li>
+</ul></li>
+<li>Log in via SSH as root</li>
+<li>Prepare a directory on the destination datastore
+<ul><li><code>mkdir "/vmfs/volumes/destination_datastore/Some VM"</code></li>
+</ul></li>
+<li>Clone the .vmdk files using thin provisioning
+<ul><li><code>vmkfstools -i "/vmfs/volumes/source_datastore/Some VM/Some VM.vmdk" -d thin "/vmfs/volumes/destination_datastore/Some VM/Some VM.vmdk"</code></li>
+</ul></li>
+<li>Copy any remaining files (avoiding overwriting the .vmdk files)
+<ul><li><code>find "/vmfs/volumes/source_datastore/Some VM" -maxdepth 1 -type f -print0 | grep -v ".vmdk" | while read file; do cp "$file" "/vmfs/volumes/destination_datastore/Some VM"; done</code></li>
+</ul></li>
+<li>If you did not consolidate snapshots in step 2, there may be snapshot .vmdk delta files, we also need to copy these (this may take some time):
+<ul><li><code>find "/vmfs/volumes/source_datastore/Some VM" -maxdepth 1 -type f -print0 | grep [0123456789][0123456789][0123456789][0123456789][0123456789][0123456789] | grep ".vmdk" | while read file; do cp "$file" "/vmfs/volumes/destination_datastore/Some VM"; done</code></li>
+</ul></li>
+<li>Once done cloning and copying all necessary files, add the VM from the new datastore back to inventory
+<ul><li>In the vSphere client go to: <em>Configuration-&gt;Storage-&gt;Data Browser</em>, right click the destination datastore which you moved your VM to and click &quot;Browse datastore&rdquo;. <img alt="enter image description here" src="http://i.stack.imgur.com/8oGqv.png"/></li>
+</ul></li>
+<li>Browse to your VM and right click the <strong>.vmx</strong> file, then click &ldquo;Add to inventory&quot; <img alt="enter image description here" src="http://i.stack.imgur.com/rQXjS.png"/></li>
+<li>Boot up the VM to see if it works, when asked whether you copied or moved it, just answer that you copied it. (I&rsquo;m not sure what this means, but I think it has to do at least with the MAC address of the vNIC being changed.) <img alt="enter image description here" src="http://i.stack.imgur.com/5Etyu.png"/></li>
+<li>If the VM boots up fine, you can remove the VM from the old datastore.</li>
+<ul><li><code>rm -rf "/vmfs/volumes/source_datastore/Some VM"</code></li>
+</ul></ul>
+<p><em>Source: http://serverfault.com/questions/372526/move-vmware-esxi-vm-to-new-datastore-preserve-thin-provisioning</em></p>

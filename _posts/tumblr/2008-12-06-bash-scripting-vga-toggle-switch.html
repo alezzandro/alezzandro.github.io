@@ -1,0 +1,33 @@
+---
+layout: post
+title: bash scripting - VGA toggle switch
+date: '2008-12-06T15:20:00+01:00'
+tags:
+- bash
+- vga
+- xrandr
+- output
+- cable
+- connectiom
+- display
+- script
+- scripting
+- xorg
+- gnu
+- linux
+- textmadebyme
+tumblr_url: http://blog.alezzandro.com/post/63370185/bash-scripting-vga-toggle-switch
+---
+<p><img src="http://upload.wikimedia.org/wikipedia/commons/thumb/6/61/VGA_Stecker.jpg/300px-VGA_Stecker.jpg" height="263" width="300"/></p>
+<p><b>VGA port</b>, really useful way to display through big Monitor or TV your tiny videos instead of watching them on your little notebook&rsquo;s display :-)</p>
+<p>Are you bored to have to restart X every time you want to connect your VGA cable?</p>
+<p>Don&rsquo;t you want to use gnome-display-etc-etc-manager to only configure a stupid VGA Monitor?</p>
+<p>Don&rsquo;t worry, you can use a little bash script (linked to some buttons on you panels), to manage your VGA connection.</p>
+<p>I works like a switch, the script will enable the output choiced if this is disabled and viceversa it will disable the output if this is enabled.</p>
+<p>But stop speaking (/writing) and watch it now:</p>
+<p>vga.sh:</p>
+<blockquote>
+<p>#!/bin/bash<br/>#<br/># This script was created to manage an external output for notebook<br/>#    The script only needs a bit of configuration to set the default output, mode, rate and extra options,<br/>#    It works like a switch, the script will enable the output choiced if this is disabled and viceversa it will disable<br/>#        the output if this is enabled.<br/>#    It can be used on various acpi script linking it to your notebook&rsquo;s fn+key.<br/>#<br/># Made by: Alessandro Arrichiello &lt;alezzandro@gmail.com&gt;<br/>#<br/># Configuration starts here:<br/><br/>output=&ldquo;VGA&rdquo;<br/>mode=&ldquo;1024x768&rdquo;<br/>rate=&ldquo;60&rdquo;<br/>extra_options=&ldquo;&ndash;right-of LVDS&rdquo;<br/>xrandr_cmd=&ldquo;xrandr &ndash;output &rdquo;$output&quot; &ndash;mode &ldquo;$mode&rdquo; &ndash;rate &ldquo;$rate&rdquo; &ldquo;$extra_options<br/><br/>#<br/># END of Configuration<br/><br/>xrandr_output=`xrandr|grep $output`<br/><br/>if [ `echo $xrandr_output|grep -c disconnected` == &quot;1&rdquo; ]; then<br/> echo &ldquo;Cable for &rdquo;$output&quot; not connected.&ldquo;<br/>else<br/> if [ `echo $xrandr_output|grep -c connected` == &quot;1&rdquo; ]; then <br/> if [ `echo $xrandr_output|grep -c $mode` == &ldquo;1&rdquo; ]; then<br/> echo &ldquo;Putting off: &rdquo;$output<br/> xrandr &ndash;output $output &ndash;off<br/> else<br/> echo &ldquo;Putting on: &rdquo;$output<br/> `$xrandr_cmd`<br/> fi<br/><br/> else<br/> echo &ldquo;Output not found check your configuration.&rdquo;<br/><br/> fi<br/>fi</p>
+</blockquote>
+<p>Remember to set the right permissions (chmod +x vga.sh),</p>
+<p>see you,</p>

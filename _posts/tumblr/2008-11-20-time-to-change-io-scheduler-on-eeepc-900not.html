@@ -1,0 +1,51 @@
+---
+layout: post
+title: Time to change I/O Scheduler on eeepc 900..(not only on it)
+date: '2008-11-20T21:29:54+01:00'
+tags:
+- ssd
+- scheduler
+- i/o
+- linux
+- asus
+- dell
+- eeepc
+- '900'
+- '901'
+- mininote
+- heavy
+- disk
+- responsiveness
+- firefox
+- hangs
+- system
+- kernel
+- deadline
+- noop
+- as
+- cfq
+- elevator
+- textmadebyme
+tumblr_url: http://blog.alezzandro.com/post/60743449/time-to-change-io-scheduler-on-eeepc-900not
+---
+<p><img src="http://upload.wikimedia.org/wikipedia/en/9/95/E-disk_2-5_scsi.jpg" width="170" height="122"/></p>
+<p>Yes you can,</p>
+<p>It&rsquo;s not only a great political slogan..</p>
+<p>Does Heavy Disk I/O harm your system responsiveness? (Do Firefox and other apps become unresponsive when using I/O on SSD?)</p>
+<p>There is a &ldquo;little&rdquo; workaround: change your I/O Scheduler!</p>
+<p>You can change I/O Scheduler of your kernel on eeepc 900 (and not only, also on: 901, dell mininote and the other netbooks with Solid State Disk) and use someone that will takes you some advantages,</p>
+<p>with the option: &ldquo;<b><i>elevator</i></b>&rdquo; you can try many different schedulers from you kernel:</p>
+<p><a href="http://en.wikipedia.org/wiki/CFQ" title="CFQ" target="_blank">Completely Fair Queuing (Linux)</a> (Default one)</p>
+<p><a href="http://en.wikipedia.org/wiki/Anticipatory_scheduling" title="Anticipatory scheduling" target="_blank">Anticipatory scheduling</a></p>
+<p><a href="http://en.wikipedia.org/wiki/Noop_scheduler" title="Noop scheduler" target="_blank">Noop scheduler</a></p>
+<p><a href="http://en.wikipedia.org/wiki/Deadline_scheduler" title="Deadline scheduler" target="_blank">Deadline scheduler</a></p>
+<p>Also as you can read by the description of each scheduler, noop seems to be the best I/O Scheduler for Systems placed on SSD,</p>
+<p>but I&rsquo;ve experienced more improvement using Deadline Scheduler.</p>
+<p>this is an example showing my current Grub configuration:</p>
+
+<blockquote><i>title        Ubuntu 8.10, kernel 2.6.27-8-eeepc</i><br/><i>uuid        32399df8-340e-45bb-8344-430976ffa718</i><br/><i>kernel        /boot/vmlinuz-2.6.27-8-eeepc root=UUID=32399df8-340e-45bb-8344-430976ffa718 ro elevator=deadline</i><br/><i>initrd        /boot/initrd.img-2.6.27-8-eeepc</i><br/><i>quiet</i><br/></blockquote>
+
+<p>Please note: what you are experiencing on your system seems to be a bug related to the kernel,</p>
+<p>Stay Tuned on: <a href="https://bugs.launchpad.net/ubuntu/+source/linux/+bug/131094" target="_blank">https://bugs.launchpad.net/ubuntu/+source/linux/+bug/131094</a> to have more updates!</p>
+
+<p>gbyte :-)</p>
