@@ -1,0 +1,3 @@
+# exclude site/* and .jekyll
+_site/*
+.jekyll-assets-cache

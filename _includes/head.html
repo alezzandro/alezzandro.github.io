@@ -66,8 +66,9 @@
 <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
 <link rel="alternate" type="application/rss+xml" title="{{ site.name }}" href="{{ "/feed.xml" | prepend: site.baseurl | prepend: site.url }}">
 
-{% stylesheet main %}
-{% javascript modernizr-custom data-cfasync="false" %}
+
+<link rel="stylesheet" href="/assets/css/main.css">
+<script src="/assets/js/modernizr-custom.js" data-cfasync="false"></script>
 
 <script type="application/ld+json">
 {
