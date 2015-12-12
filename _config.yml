@@ -8,7 +8,7 @@ paginate_path: "/page/:num"
 
 baseurl: "" # change to empty string ""
 domain_name: alezzandro.com
-google_analytics: UA-52446115-1
+google_analytics: UA-71306763-1
 
 source: . 
 destination: _site
@@ -22,8 +22,8 @@ title: "#!/usr/bin/bash"
 description: "Red Hatter, avid swimmer, obstinate dreamer, healthy carrier of joy."
 meta_description: "Red Hatter, avid swimmer, obstinate dreamer, healthy carrier of joy."
 meta_keywords: "site, website, alessandro, frontend, front-end, html5, css3, javascript, jquery, seo, otimizacao, performance"
-url: http://alezzandro.github.io
-production_url: http://alezzandro.github.io
+url: http://alezzandro.com
+production_url: http://alezzandro.com
 repo: 
 disqus_shortname: "alezzandro"
 rss_path: .
