@@ -1,0 +1,55 @@
+---
+layout: post
+title: 'Red Hat Satellite 6: Openstack instances self provisioning'
+date: '2015-12-24T20:39:24+01:00'
+tags:
+- redhat
+- satellite
+- satellite6
+- foreman
+- openstack
+- instance
+- provisioning
+- automatic
+---
+<p>I've seen a lot of questions around this theme,</p>
+<p><img src="/images/20151224/Screenshot+from+2015-12-25 17-01-19.png" /> </p>
+<p>with this blog post I'll show you step by step how to setup your Satellite 6 to self provision Openstack instances.</p>
+<p></p>
+<p>First of all you need to login to your Satellite 6 platform and then move to: Infrastructure -&gt; Compute resources -&gt; New.</p>
+<p></p>
+<p><img alt="Screenshot from 2015-12-24 17-21-28.png" class="image-1 jive-image" src="/images/20151224/Screenshot+from+2015-12-24+17-21-28.png" style="width: 620px; height: 383px;" __jive_id="1024941" /></p>
+<p></p>
+<p>After choosing a name for the new oompute resource and the right provider (Openstack), you should place the Openstack web interface address, you username &amp; password and try to load the available tenants.</p>
+<p></p>
+<p>Adding a compute resource is not the only step you should make. After that you have to configure the various flavors that you want to provide to your Satellite's users!</p>
+<p>Open the just created compute resource and move to "Compute profiles" tab.</p>
+<p><img alt="Screenshot from 2015-12-24 17-26-52.png" class="image-2 jive-image" src="/images/20151224/Screenshot+from+2015-12-24+17-26-52.png" style="width: 620px; height: 176px;" __jive_id="1024942" /></p>
+<p>Then click on every compute profile you may provide and customize it as showed down here:</p>
+<p><img alt="Screenshot from 2015-12-24 17-30-23.png" class="image-3 jive-image" src="/images/20151224/Screenshot+from+2015-12-24+17-30-23.png" style="width: 620px; height: 402px;" __jive_id="1024943" /></p>
+<p>As you can see I chose only the flavor and the tenant, every other detail could be chosen directly by the "New Host" page!</p>
+<p></p>
+<p>Now it's time to move to the "Images" tab, from there you should create as many images as many operating systems you want to provide to your users.</p>
+<p><img alt="Screenshot from 2015-12-24 17-37-37.png" class="image-4 jive-image" src="/images/20151224/Screenshot+from+2015-12-24+17-37-37.png" style="width: 620px; height: 206px;" __jive_id="1024944" /></p>
+<p>As you can see I added images that also have support for User data, this flag is very important and remember to choose images that actually support cloud-init commands for ensuring complete provisioning through your Satellite installation.</p>
+<p></p>
+<p>We've almost completed the configuration, all we need now is to customize the user-data template. For editing the userdata template just move to: "Hosts -&gt; Provisioning Templates".</p>
+<p>The default "Satellite Kickstart User Data" is locked so you need to clone it and start editing the new one.</p>
+<p><img alt="Screenshot from 2015-12-24 17-46-48.png" class="image-5 jive-image" src="/images/20151224/Screenshot+from+2015-12-24+17-46-48.png" style="width: 620px; height: 417px;" __jive_id="1024945" /></p>
+<p></p>
+<p>Finally you should set the right User Data template in every operating system you planned to use. Go to "Hosts -&gt; Operating Systems"</p>
+<p></p>
+<p><img alt="Screenshot from 2015-12-24 17-51-18.png" class="image-6 jive-image" src="/images/20151224/Screenshot+from+2015-12-24+17-51-18.png" style="width: 620px; height: 264px;" __jive_id="1024946" /></p>
+<p></p>
+<p>Time to test it! Move to "Hosts -&gt; New Host", after selecting the right Hostgroup, you will now be able to select something different from the classic "Bare metal" choice, you shoul now see also the just added compute resource!</p>
+<p><img alt="Screenshot from 2015-12-24 17-56-13.png" class="image-7 jive-image" src="/images/20151224/Screenshot+from+2015-12-24+17-56-13.png" style="width: 620px; height: 428px;" __jive_id="1024947" /></p>
+<p></p>
+<p>Moving to "Operating System" tab you should see a dropdown menu that it'll let you choose one of the just defined images.</p>
+<p><img alt="Screenshot from 2015-12-24 17-57-49.png" class="image-8 jive-image" src="/images/20151224/Screenshot+from+2015-12-24+17-57-49.png" style="width: 620px; height: 316px;" __jive_id="1024952" /></p>
+<p></p>
+<p>Finally moving to the "Virtual Machine" tab you should see various dropdown menu that will let you choose other flavour and/or OSP tenant.</p>
+<p><img alt="Screenshot from 2015-12-24 17-58-12.png" class="image-9 jive-image" src="/images/20151224/Screenshot+from+2015-12-24+17-58-12.png" style="width: 620px; height: 422px;" __jive_id="1024953" /></p>
+<p>Now launch the host creation! Satellite 6 will communicate to Openstack instructing it on what kind of instance it should launch!</p>
+<p></p>
+<p>That's all!</p>
+<p>If you have any comments/questions please comment!</p>
