@@ -1,0 +1,90 @@
+---
+layout: post
+title: 'Monitoring OpenShift through its and/or Kubernetes API'
+date: '2016-06-08T09:39:24+01:00'
+tags:
+- redhat
+- openshift
+- ose
+- origin
+- kubernetes
+- api
+- monitor
+- monitoring
+---
+<p>While proceeding with CloudForms installation and configuration, I thought about the chance to monitor some pieces of the OpenShift v3 infrastructure using existing monitor tool (Zabbix for example).</p>
+<p>In the example I'll describe, I want (for now) monitor the state of all the OpenShift nodes and the restart count for pods of some critical projects (I experienced some issues with Docker that result in multiple restarts for containers running in one node).</p>
+<p>I'll show in this document the whole process I made to make it works (unfortunately googling and testing because there is no great documentation on this topic).</p>
+<p><strong>PLEASE NOTE</strong>: all the commands you'll see has been executed as system:admin, the thing is not necessary if you stay in your project scope and/or projects in which you're admin (but it would be mandatory for cluster policies).</p>
+<p>First of all we need to setup at least a service account, this is the better way to handle it avoiding standard user.</p>
+<p>A service account is usually associated to a project, so let's define it:</p>
+<blockquote>
+<p># cat &gt; monitor-sa.yaml &lt;&lt; EOF</p>
+<p>apiVersion: v1</p>
+<p>kind: ServiceAccount</p>
+<p>metadata:</p>
+<p>&nbsp; name: monitor</p>
+<p>EOF</p></blockquote>
+<p>And then create it:</p><blockquote>
+<p># oc create -f ./monitor-sa.yaml -n yourProject</p>
+<p>serviceaccount "monitor" created</p></blockquote><p>&nbsp;</p>
+<p>Then you have to give to service account some permissions to view the resources in its project:</p><blockquote>
+<p># oc policy add-role-to-user view system:serviceaccount:yourProject:monitor</p></blockquote><p>&nbsp;</p>
+<p>Finally supposing that you want that this service account may also view/read resources of other projects, you should plan to extend its permissions with:</p><blockquote>
+<p># oc policy add-role-to-user view system:serviceaccount:yourProject:monitor -n anotherProject</p>
+<p># oc policy add-role-to-user view system:serviceaccount:yourProject:monitor -n oneMoreProject</p></blockquote><p>&nbsp;</p>
+<p>Thanks to these policies you should be able to query the kubernetes API for the previously enabled projects, we'll see at end of this doc how to query these APIs.</p><p>&nbsp;</p>
+<p>Going forward, to enable our service account "monitor" for seeing the OpenShift Cluster status, we need to assign special policies:</p><blockquote>
+<p># oadm policy <strong>add-cluster-role-to-user</strong> cluster-reader system:serviceaccount:yourProject:monitor</p></blockquote>
+<p>I've marked bold that part of the command, because that makes the role assignment working. (If you try to use the previous instruction "add-role-to-user" it won't work .. )</p><p>&nbsp;</p>
+<p>Now we've finally completed the configuration process, we can start testing if the policies we applied are actually working.</p><p>&nbsp;</p>
+<p>First of all we have to grab the name of the generated token for our Service Account:</p><blockquote>
+<p># oc describe sa monitor -n yourProject</p>
+<p>Name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; monitor</p>
+<p>Namespace:&nbsp;&nbsp;&nbsp; yourProject</p>
+<p>Labels:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;none&gt;</p><p>&nbsp;</p>
+<p>Tokens:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong> monitor-token-ds2b6</strong></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; monitor-token-re2s3</p><p>&nbsp;</p>
+<p>Image pull secrets:&nbsp;&nbsp;&nbsp; monitor-dockercfg-0u01t</p><p>&nbsp;</p>
+<p>Mountable secrets:&nbsp;&nbsp;&nbsp;&nbsp; monitor-token-re2s3</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; monitor-dockercfg-0u01t</p></blockquote><p>&nbsp;</p>
+<p>Then we can choose a token (OpenShift has already generated two tokens for us) for querying the REST API:</p><blockquote>
+<p># oc describe secret monitor-token-ds2b6 -n yourProject</p>
+<p>Name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; monitor-token-ds2b6</p>
+<p>Namespace:&nbsp;&nbsp;&nbsp; yourProject</p>
+<p>Labels:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;none&gt;</p>
+<p>Annotations:&nbsp;&nbsp;&nbsp; kubernetes.io/service-account.name=monitor,kubernetes.io/service-account.uid=6fa2ee01-1926-11e6-961f-0050568c6666</p><p>&nbsp;</p>
+<p>Type:&nbsp;&nbsp;&nbsp; kubernetes.io/service-account-token</p><p>&nbsp;</p>
+<p>Data</p>
+<p>====</p>
+<p>ca.crt:&nbsp;&nbsp;&nbsp; 1066 bytes</p>
+<p>token:&nbsp;&nbsp;&nbsp; eyKhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJhdGxhcy1wcm9kdWN0aW9uIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6Im1vbml0b3ItdG9rZW4tZHMyYjYiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoibW9uaXRvciIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjZmYzJlZTAyLTE4MjYtMTFlNi05NjFiLTAwNTA1NjhjNjY3OCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDphdGxhcy1wcm9kdWN0aW9uOm1vbml0b3IifQ.hmYza9ongOwAfNb4HhpaJBah22VBQxEsAFIjQu4RXVkE2OR-meYcZzp16YYDimvq6QAUama7PF5id9x5l8e_g9T6JdBPrlmAagAAAedNWOdmDtQ9OH4wQYfOipo1pddsyll4bO682VNAf9CW9adXdgXIUEiM9rKHhbt--B4Rehe-OOKcIxFeVe1deo46adziwfMQYjoa6K9CAFQPoLGUj4M3slb6XyBGSbmDWPTB8LRP0O1bfP9ZXRqsXb-O0IGNOMkkzR2Ox2ZaVU9CjjmkrchxB-_Pe4pkkv6rty1lRba0colhL4kwIHWi-yll2frEteNy0ZF6GcvpZw1ucd6WWz</p></blockquote><p>&nbsp;</p>
+<p>So we're ready to test it:</p><blockquote>
+<p># export TOKEN=eyKhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJhdGxhcy1wcm9kdWN0aW9uIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6Im1vbml0b3ItdG9rZW4tZHMyYjYiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoibW9uaXRvciIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjZmYzJlZTAyLTE4MjYtMTFlNi05NjFiLTAwNTA1NjhjNjY3OCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDphdGxhcy1wcm9kdWN0aW9uOm1vbml0b3IifQ.hmYza9ongOwAfNb4HhpaJBah22VBQxEsAFIjQu4RXVkE2OR-meYcZzp16YYDimvq6QAUama7PF5id9x5l8e_g9T6JdBPrlmAagAAAedNWOdmDtQ9OH4wQYfOipo1pddsyll4bO682VNAf9CW9adXdgXIUEiM9rKHhbt--B4Rehe-OOKcIxFeVe1deo46adziwfMQYjoa6K9CAFQPoLGUj4M3slb6XyBGSbmDWPTB8LRP0O1bfP9ZXRqsXb-O0IGNOMkkzR2Ox2ZaVU9CjjmkrchxB-_Pe4pkkv6rty1lRba0colhL4kwIHWi-yll2frEteNy0ZF6GcvpZw1ucd6WWz</p>
+<p>#</p>
+<p><span># curl -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -X GET </span>https://console.mydomain.local:8443/api/v1/namespaces/yourProject/pods<span> -k 2&gt;/dev/null | jq '.items[]."status"."containerStatuses"[]."restartCount"'</span></p>
+<p>0</p>
+<p>0</p>
+<p>0</p>
+<p>8</p>
+<p>0</p>
+<p>0</p>
+<p>0</p>
+<p>10</p>
+<p><span>$ curl -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -X GET </span>https://console.mydomain.local:8443/api/v1/nodes<span> -k 2&gt;/dev/null | jq '.items[]."status"."conditions"[]."status"'</span></p>
+<p>"True"</p>
+<p>"True"</p>
+<p>"True"</p>
+<p>"True"</p>
+<p>"True"</p>
+<p>"True"</p>
+<p>"True"</p>
+<p>"True"</p>
+<p>"True"</p>
+<p>"True"</p>
+<p>"True"</p></blockquote><p>&nbsp;</p>
+<p>As you can see the first HTTP GET gets information about the pods running in yourProject, instead the second one request information about the cluster's nodes.</p><p>&nbsp;</p>
+<p>Removing the "jq" command, that actually parse and filter the json output response, you'll obtain the full output, so you can keep digging on the available details and change what you could actually monitor.</p><p>&nbsp;</p>
+<p></p>
+<p>That's all!</p>
+<p>If you have any comments/questions please comment!</p>
