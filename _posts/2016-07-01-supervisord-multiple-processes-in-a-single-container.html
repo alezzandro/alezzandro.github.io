@@ -1,0 +1,95 @@
+---
+layout: post
+title: '[supervisord] Multiple processes in a single container'
+date: '2016-07-01T09:39:24+01:00'
+tags:
+- redhat
+- openshift
+- ose
+- origin
+- kubernetes
+- docker
+- container
+- supervisord
+- configuration
+- installation
+- multiple
+---
+v class="jive-rendered-content"><h1>Introduction</h1><p>Many times at customer site I have been asked for creating a container full of services, daemons and stuff like a container could be used like a full virtual machine.</p>
+<p>After explaining the containers' real purpose, their correct usage and the differences between a container and a vm, the process of containerization could be a real pain and in some cases we could be not able to ensure the fundamental rule of 1 container : 1 process.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>In the following example I'll show you the steps that drove me to create a multiprocess container: the postfix container.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<h1>The postfix container</h1><p>Postfix is a free and open-source mail transfer agent (MTA) that routes and delivers electronic mail, intended as an alternative to Sendmail MTA.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>The most challenging part of the process was to correctly place the logs for sent emails (by postfix) directly on STDOUT.</p>
+<p>Logging to STDOUT ensures that some logs grabber (Fluentd in OpenShift v3) could take these logs and send them to the default logs management system (EFK - Elasticsearch/Fluentd/Kibana on OSEv3).</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Unfortunately postfix by default wants to send logs to some rsyslog, that usually saves them to a log file, so I've been forced to create postfix container using multiple processes, violating what should be the best practice for creating a container: 1 process per container.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>The three processes involved in the container creation were:</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<ul><li>Postfix</li><li>Rsyslog</li><li>tail -f (on /var/log/maillog)</li></ul><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>The last process to run and to leave in foreground, it was (for sure) the tail one. tail process will keep running in foreground while postfix and rsyslog do their job, but, what happen if postfix or rsyslog exits unexpectedly?</p>
+<p>Nothing!</p>
+<p>Docker container will keep running as soon as the tail process does. So your container orchestrator will never notice the absence of postfix process (unless you have some custom health check).</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>The solution I found was to use an internal processes orchestrator: <strong>supervisord</strong> (available in EPEL repo).</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Supervisord will be responsible to watch and keep them running your configured processes. If a process exits unexpectedly it will run the process again.</p>
+<p>So your Docker's CMD/ENTRYPOINT will be the supervisord command.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>But now let's take a look to the Dockerfile itself:</p>
+<blockquote class="jive-quote"><p>FROM rhel7</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><span>RUN yum install -y </span><a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fdl.fedoraproject.org%2Fpub%2Fepel%2Fepel-release-latest-7.noarch.rpm" rel="nofollow" target="_blank">https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm</a></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>RUN yum install -y postfix supervisor rsyslog</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>RUN sed -i "s/inet_interfaces = localhost/inet_interfaces = all/g" /etc/postfix/main.cf</p>
+<p>RUN echo mynetworks = 172.0.0.0/8, 10.0.0.0/8, 127.0.0.0/8, 192.168.0.0/16 &gt;&gt; /etc/postfix/main.cf</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>COPY ./resources/supervisord.conf /etc/supervisor/supervisord.conf</p>
+<p>COPY ./resources/rsyslog.conf /etc/rsyslog.conf</p>
+<p>COPY ./resources/listen.conf /etc/rsyslog.d/listen.conf</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>CMD /usr/bin/echo myhostname=$myhostname &gt;&gt; /etc/postfix/main.cf; /usr/bin/supervisord -c /etc/supervisor/supervisord.conf</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Looking at 'resources' folder [1], you'll find the config file for rsyslog and supervisord, all the conf for postfix are done in place directly on Dockerfile.</p>
+<p>Configuration for supervisord daemon is really simple:</p>
+<blockquote class="jive-quote"><p>[supervisord]</p>
+<p>nodaemon=true</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>[program:postfix]</p>
+<p>command=/usr/libexec/postfix/master -c /etc/postfix -d</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>[program:rsyslog]</p>
+<p>command=/usr/sbin/rsyslogd -n </p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>[program:readlog]</p>
+<p>command=/usr/bin/tail -f /var/log/maillog</p>
+<p>stdout_logfile=/dev/fd/1</p>
+<p>stdout_logfile_maxbytes=0</p>
+</blockquote><p>As you can see in the readlog program definition I'm setting the proper stdout for tail to supervisord stdout.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>The other two file "listen.conf" and "rsyslog.conf" are related to rsyslog itself and they contains edits suggested by a project-atomic blog post:</p>
+<p><a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=http%3A%2F%2Fwww.projectatomic.io%2Fblog%2F2014%2F09%2Frunning-syslog-within-a-docker-container%2F" rel="nofollow" target="_blank">Running Syslog Within a Docker Container —Project Atomic</a> </p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Just for quoting it:</p>
+<blockquote class="jive-quote"><p>The problem was that in RHEL7 and Fedora we now use journald, which listens on /dev/log for incoming messages. In RHEL7 and Fedora, rsyslog actually reads messages from the journal via its API by default.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>But not all docker containers run systemd and journald. (Most don’t). In order to get the rsyslogd to work the way the user wanted, he would have to modify the configuration file, /etc/rsyslogd.conf:</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<ul><li>In /etc/rsyslog.conf remove $ModLoad imjournal.</li><li>Set $OmitLocalLogging to off.</li><li>Make sure $ModLoad imuxsock is present.</li><li>Also comment out: $IMJournalStateFile imjournal.state.</li></ul></blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>That's all with these simple steps and the help of supervisord you should solve your problems!</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>I've successfully tested the container in various OpenShift environments, mainly as SMTP server (or with proper customization to the config file, as SMTP Relay server).</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>For more information please refer to:</p>
+<p>&nbsp; [1] <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fgithub.com%2Falezzandro%2Fpostfix-docker" rel="nofollow" target="_blank">GitHub - alezzandro/postfix-docker: Git repo for automated build of a postfix based docker container ready for OpenShift…</a> </p>
+<p>&nbsp; [2] <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fhub.docker.com%2Fr%2Falezzandro%2Fpostfix%2F" rel="nofollow" target="_blank">https://hub.docker.com/r/alezzandro/postfix/</a> </p>
+<p>&nbsp; [3] Postfix container used in a persistent Gitlab OpenShift Template: <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fgithub.com%2Fsdellang%2Fgitlab-openshift-persistent" rel="nofollow" target="_blank">GitHub - sdellang/gitlab-openshift-persistent</a> </p>
+</div>
+<p>If you have any comments/questions please comment!</p>
