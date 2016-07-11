@@ -1,0 +1,354 @@
+---
+layout: post
+title: 'Deploying GlusterFS using Ansible'
+date: '2016-07-01T09:39:24+01:00'
+tags:
+- redhat
+- ansible
+- configuration
+- management
+- cfgmgmt
+- glusterfs
+- gluster
+- filesystem
+- distributed
+- replicated
+- configuration
+- installation
+- multiple
+---
+
+<h1><span role="img" title="Document" class="jive-icon-big jive-icon-document"></span>Deploying GlusterFS using Ansible</h1>
+
+<img src="https://www.gluster.org/images/antmascot.png" />
+
+<p>During last weeks I've been playing with two new technologies and I though it might be useful to mix them up: Ansible &amp; GlusterFS.</p>
+<p>The most annoying part of a GlusterFS engagement is the nodes' setup &amp; configuration, RHN registration, subscriptions management, packages installation, etc.</p>
+<p>Just think to all these activities per multiple nodes: a really time wasting job!</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>So I decided to start playing with Ansible for automating the whole process and take the great advantage of this tool.</p>
+<p>I'll describe two ways:</p>
+<ul><li>manual: using a custom playbook</li><li>automatic: using gdeploy tool</li></ul><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Please note: for the whole tests I'm using vagrant virtual machines and vagrant dynamic inventory script.</p>
+<p>For more information you can refer to: <a class="jive-link-wiki-small" data-containerid="7045" data-containertype="700" data-objectid="1084146" data-objecttype="102" href="https://mojo.redhat.com/docs/DOC-1084146">Ansible and Vagrant: setup your testing lab in minutes!</a></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<h1 id="jive_content_id_Manual_Writing_a_custom_playbook">Manual: Writing a custom playbook</h1><p>Just for testing Ansible features I wrote two test playbooks for:</p>
+<ul><li>subscribing the systems to RHN</li><li>enabling Gluster repositories</li><li>updating the systems</li></ul><p>And then:</p>
+<ul><li>installing Gluster's packages</li><li>creating a gluster volume with 4 replicas</li></ul><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>This is the first playbook, that we'll use for registering the vagrant instance to RHN and for updating the systems.</p>
+<p><em><strong>-&gt; Please don't forget change your RHN_username with yours.</strong></em></p>
+<blockquote class="jive-quote"><p>[alex@freddy test_gluster]$ cat init.yml</p>
+<p>- hosts: vagrant</p>
+<p>&nbsp; vars:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RHN_username: <a class="jive-link-email-small" href="mailto:user@domain.com">aarrichi@redhat.com</a> <strong># Change it with your RHN username!</strong></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RHN_poolname: "RH SKU"</p>
+<p>&nbsp; vars_prompt:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: "RHN_password"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; prompt: Please input RHN password</p>
+<p>&nbsp; tasks:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: Checking if it's already registered to RHN</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; become: yes</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ignore_errors: True</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shell: "subscription-manager status"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; register: result</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: Subscribe to RHN</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; become: yes</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; redhat_subscription: username={{ RHN_username }} password={{ RHN_password }} pool={{ RHN_poolname }}</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; when: result.rc|int &gt; 0</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: Enable chosen repositories</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; become: yes</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; command: "subscription-manager repos --disable '*' --enable rhel-7-server-rpms --enable rhel-7-server-optional-rpms --enable rhel-7-server-extras-rpms --enable rh-gluster-3-for-rhel-7-server-rpms"</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: Update the system</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; become: yes</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yum: state=latest name='*'</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>We are now ready to test the registration playbook.</p>
+<p>Note: in this case I'll use default vagrant dynamic inventory script, set in /etc/ansible/ansible.cfg</p>
+<blockquote class="jive-quote"><p>[alex@freddy test_gluster]$ ansible-playbook init.yml</p>
+<p>Please input RHN password:</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>PLAY [vagrant] *****************************************************************</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>TASK [setup] *******************************************************************</p>
+<p>ok: [gluster3]</p>
+<p>ok: [gluster4]</p>
+<p>ok: [gluster2]</p>
+<p>ok: [gluster1]</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>TASK [Checking if it's already registered to RHN] ******************************</p>
+<p>fatal: [gluster3]: FAILED! =&gt; {"changed": true, "cmd": "subscription-manager status", "delta": "0:00:03.126296", "end": "2016-06-24 09:42:05.565593", "failed": true, "rc": 1, "start": "2016-06-24 09:42:02.439297", "stderr": "", "stdout": "+-------------------------------------------+\n&nbsp;&nbsp; System Status Details\n+-------------------------------------------+\nOverall Status: Unknown", "stdout_lines": ["+-------------------------------------------+", "&nbsp;&nbsp; System Status Details", "+-------------------------------------------+", "Overall Status: Unknown"], "warnings": []}</p>
+<p>...ignoring</p>
+<p>fatal: [gluster4]: FAILED! =&gt; {"changed": true, "cmd": "subscription-manager status", "delta": "0:00:03.431978", "end": "2016-06-24 09:42:05.685565", "failed": true, "rc": 1, "start": "2016-06-24 09:42:02.253587", "stderr": "", "stdout": "+-------------------------------------------+\n&nbsp;&nbsp; System Status Details\n+-------------------------------------------+\nOverall Status: Unknown", "stdout_lines": ["+-------------------------------------------+", "&nbsp;&nbsp; System Status Details", "+-------------------------------------------+", "Overall Status: Unknown"], "warnings": []}</p>
+<p>...ignoring</p>
+<p>fatal: [gluster1]: FAILED! =&gt; {"changed": true, "cmd": "subscription-manager status", "delta": "0:00:04.199137", "end": "2016-06-24 09:42:06.260388", "failed": true, "rc": 1, "start": "2016-06-24 09:42:02.061251", "stderr": "", "stdout": "+-------------------------------------------+\n&nbsp;&nbsp; System Status Details\n+-------------------------------------------+\nOverall Status: Unknown", "stdout_lines": ["+-------------------------------------------+", "&nbsp;&nbsp; System Status Details", "+-------------------------------------------+", "Overall Status: Unknown"], "warnings": []}</p>
+<p>...ignoring</p>
+<p>fatal: [gluster2]: FAILED! =&gt; {"changed": true, "cmd": "subscription-manager status", "delta": "0:00:05.895824", "end": "2016-06-24 09:42:08.195838", "failed": true, "rc": 1, "start": "2016-06-24 09:42:02.300014", "stderr": "", "stdout": "+-------------------------------------------+\n&nbsp;&nbsp; System Status Details\n+-------------------------------------------+\nOverall Status: Unknown", "stdout_lines": ["+-------------------------------------------+", "&nbsp;&nbsp; System Status Details", "+-------------------------------------------+", "Overall Status: Unknown"], "warnings": []}</p>
+<p>...ignoring</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>TASK [Subscribe to RHN] ********************************************************</p>
+<p>changed: [gluster1]</p>
+<p>changed: [gluster3]</p>
+<p>changed: [gluster2]</p>
+<p>changed: [gluster4]</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>TASK [Enable chosen repositories] **********************************************</p>
+<p>changed: [gluster2]</p>
+<p>changed: [gluster4]</p>
+<p>changed: [gluster3]</p>
+<p>changed: [gluster1]</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>TASK [Update the system] *******************************************************</p>
+<p>ok: [gluster2]</p>
+<p>ok: [gluster3]</p>
+<p>changed: [gluster1]</p>
+<p>changed: [gluster4]</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>PLAY RECAP *********************************************************************</p>
+<p>gluster1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : ok=5&nbsp;&nbsp;&nbsp; changed=3&nbsp;&nbsp;&nbsp; unreachable=0&nbsp;&nbsp;&nbsp; failed=0</p>
+<p>gluster2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : ok=5&nbsp;&nbsp;&nbsp; changed=2&nbsp;&nbsp;&nbsp; unreachable=0&nbsp;&nbsp;&nbsp; failed=0</p>
+<p>gluster3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : ok=5&nbsp;&nbsp;&nbsp; changed=2&nbsp;&nbsp;&nbsp; unreachable=0&nbsp;&nbsp;&nbsp; failed=0</p>
+<p>gluster4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : ok=5&nbsp;&nbsp;&nbsp; changed=3&nbsp;&nbsp;&nbsp; unreachable=0&nbsp;&nbsp;&nbsp; failed=0</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>We are ready to setup our gluster environment using the following playbook.</p>
+<p>I'll try to describe all the tasks I've created in the playbook:</p>
+<ul><li>installing system-storage-manager</li><li>installing lvm2</li><li>installing sg3_utils</li><li>creating new LVM volume group</li><li>checking if we need to create logical volume</li><li>creating new LVM logical volume</li><li>creating new filesystem on new LVM logical volume</li><li>Ensure GlusterFS is installed</li><li>Ensure Gluster mount client and brick directories exist</li><li>mounting new filesystem</li><li>Ensure Gluster brick directory exist</li><li>enabling firewall tcp communication for every gluster node</li><li>enabling firewall udp communication for every gluster node</li><li>Build hosts file</li><li>Configure Gluster volume</li><li>Ensure Gluster volume is mounted</li></ul><blockquote class="jive-quote"><p>[alex@freddy test_gluster]$ cat gluster.yml</p>
+<p>---</p>
+<p>- hosts: vagrant</p>
+<p>&nbsp; become: yes</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp; vars:</p>
+<p>&nbsp;&nbsp;&nbsp; config_lvm: true</p>
+<p>&nbsp;&nbsp;&nbsp; create: true</p>
+<p>&nbsp;&nbsp;&nbsp; create_vgname: vg_gluster</p>
+<p>&nbsp;&nbsp;&nbsp; create_lvname: lv_gluster</p>
+<p>&nbsp;&nbsp;&nbsp; create_lvsize: 100%FREE</p>
+<p>&nbsp;&nbsp;&nbsp; new_disk: /dev/vdb</p>
+<p>&nbsp;&nbsp;&nbsp; filesystem: xfs</p>
+<p>&nbsp;&nbsp;&nbsp; gluster_mount_dir: /mnt/gluster</p>
+<p>&nbsp;&nbsp;&nbsp; gluster_mount_brick_dir: /srv/gluster</p>
+<p>&nbsp;&nbsp;&nbsp; gluster_brick_dir: "{{gluster_mount_brick_dir}}/brick01"</p>
+<p>&nbsp;&nbsp;&nbsp; gluster_brick_name: gluster</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp; tasks:</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; - name: installing system-storage-manager</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yum: name=system-storage-manager state=present</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; when: config_lvm and ansible_os_family == "RedHat"</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; - name: installing lvm2</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yum: name=lvm2 state=present</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; when: config_lvm and ansible_os_family == "RedHat"</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; - name: installing sg3_utils</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yum: name=sg3_utils state=present</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; when: config_lvm and ansible_os_family == "RedHat"</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; - name: creating new LVM volume group</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; lvg: vg={{ create_vgname }} pvs={{ new_disk }} state=present</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; when: create and config_lvm</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; - name: checking if we need to create logical volume</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shell: lvs | grep -c {{ create_lvname&nbsp; }}</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ignore_errors: yes</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; register: lv_result</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; when: create and config_lvm</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; - name: creating new LVM logical volume</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; lvol: vg={{ create_vgname }} lv={{ create_lvname }} size={{ create_lvsize }}</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; when: create and config_lvm and lv_result.stdout|int == 0</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; - name: creating new filesystem on new LVM logical volume</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; filesystem: fstype={{ filesystem }} dev=/dev/{{ create_vgname }}/{{ create_lvname }}</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; when: create and config_lvm</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; - name: Ensure GlusterFS is installed.</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yum:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; name: "{{ item }}"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; state: installed</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; with_items:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - glusterfs-server</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - glusterfs-client</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; - name: Ensure GlusterFS daemon is enabled and running.</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; service:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; name: "{{ item }}"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; state: started</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; enabled: yes</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; with_items:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - glusterd</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; - name: Ensure Gluster mount client and brick directories exist.</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; file: "path={{ item }} state=directory mode=0775"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; with_items:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - "{{ gluster_mount_dir }}"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - "{{ gluster_mount_brick_dir }}"</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; - name: mounting new filesystem</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mount: name={{ gluster_mount_brick_dir }} src=/dev/{{ create_vgname }}/{{ create_lvname }} fstype={{ filesystem }} state=mounted</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; when: create and config_lvm</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; - name: Ensure Gluster brick directory exist.</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; file: "path={{ item }} state=directory mode=0775"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; with_items:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - "{{ gluster_brick_dir }}"</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; - name: enabling firewall tcp communication for every gluster node</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; firewalld: port={{item}}/tcp permanent=True state=enabled immediate=True zone=public</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; with_items: [ 111, 139, 445, 965, 2049, 24007, 24009, 38465, 38466, 38468, 38469, 39543, 49152, 55863 ]</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; - name: enabling firewall udp communication for every gluster node</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; firewalld: port={{item}}/udp permanent=true state=enabled immediate=True zone=public</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; with_items: [ 111, 963 ]</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; - name: "Build hosts file"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].ansible_default_ipv4.address }} {{item}}" state=present</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; when: hostvars[item].ansible_default_ipv4.address is defined</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; with_items: groups['all']</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; - name: Configure Gluster volume.</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; gluster_volume:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; state: present</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; name: "{{ gluster_brick_name }}"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; brick: "{{ gluster_brick_dir }}"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; replicas: 4</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cluster: "{{ groups.vagrant | join(',') }}"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; host: "{{ inventory_hostname }}"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; run_once: true</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; - name: Ensure Gluster volume is mounted.</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mount:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; name: "{{ gluster_mount_dir }}"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src: "{{ inventory_hostname }}:/{{ gluster_brick_name }}"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; fstype: glusterfs</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; opts: "defaults,_netdev"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; state: mounted</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Let's try it:</p>
+<blockquote class="jive-quote"><p>[alex@freddy test_gluster]$ ansible-playbook gluster.yml</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>PLAY [vagrant] *****************************************************************</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>TASK [setup] *******************************************************************</p>
+<p>ok: [gluster2]</p>
+<p>ok: [gluster3]</p>
+<p>ok: [gluster1]</p>
+<p>ok: [gluster4]</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>...</p>
+</blockquote><p>That's all!</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<h1 id="jive_content_id_Automatic_Using_gdeploy">Automatic: Using gdeploy</h1><p>Looking at the previous paragraph, you can imagine the effort you may spend for creating this kind of playbook: write, test, fix, rewrite, test, fix, etc. etc.</p>
+<p>Luckily we have a very powerful tool from GlusterFS repository: gdeploy.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Just for quoting the gdeploy official description:</p>
+<blockquote class="jive-quote"><p><strong>What is gdeploy?</strong></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>gdeploy is a tool to set-up and deploy GlusterFS using ansible over multiple hosts. gdeploy is written to be modular, it can be used to deploy any software depending on how the configuration file is written.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>gdeploy can be used to set-up bricks for GlusterFS, create a GlusterFS volume and mount it on one or more clients from an ansible installed machine. The framework reads a configuration file and applies on the hosts listed in the configuration file.</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Gdeploy could also be used directly from your notebook, it doesn't require to be installed on one of the gluster nodes. It only depends on Ansible but unluckily it cannot be integrated with Ansible Dynamic Intentories.</p>
+<p>For that matter you have to use _only_ it's cluster configuration file defining the inventory and all the parameters inside.</p>
+<p>Another annoying fact is that you cannot use Ansible's standard way for hosts defining, gdeploy hosts section it's only a list of addresses. This implies that you will able to use _only_ root to deploy GlusterFS using gdeploy through your default SSH key.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>For more information on gdeploy you can take a look at: <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fgithub.com%2Fgluster%2Fgdeploy" rel="nofollow" target="_blank">GitHub - gluster/gdeploy: Tool to deploy glusterfs</a></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>The latest RPM version of gdeploy can be downloaded at: <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=http%3A%2F%2Fdownload.gluster.org%2Fpub%2Fgluster%2Fgdeploy%2FLATEST%2F" rel="nofollow" target="_blank">Index of /pub/gluster/gdeploy/LATEST</a></p>
+<p>You can use the community RPM version also to deploy RH GlusterFS packages on RHEL machines.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Let's take a look on a cluster.conf I've setup for configuring 4 gluster vm from zero:</p>
+<blockquote class="jive-quote"><p>[alex@freddy test_gluster]$ cat 2x2-volume-create.conf </p>
+<p>#</p>
+<p># Usage:</p>
+<p>#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; gdeploy -c 2x2-volume-create.conf</p>
+<p>#</p>
+<p># This does backend setup first and then create the volume using the</p>
+<p># setup bricks.</p>
+<p>#</p>
+<p>#</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>[hosts]</p>
+<p>192.168.121.84</p>
+<p>192.168.121.89</p>
+<p>192.168.121.231</p>
+<p>192.168.121.77</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>[RH-subscription]</p>
+<p>action=register</p>
+<p><a class="jive-link-email-small" href="mailto:username=user@domain.com">username=user@domain.com</a><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><strong># You should change this</strong></p>
+<p>password=MY_PASSWORD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong># You should change this</strong></p>
+<p>pool=8a85f9874011071c01407da00b997cb2&nbsp;&nbsp;&nbsp;&nbsp; <strong># You should change this</strong></p>
+<p>repos=rhel-7-server-rpms,rhel-7-server-optional-rpms,rhel-7-server-extras-rpms,rh-gluster-3-for-rhel-7-server-rpms</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>[yum]</p>
+<p>action=install</p>
+<p>packages=lvm2,glusterfs-server,glusterfs-client</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>[firewalld]</p>
+<p>action=add</p>
+<p>ports=111/tcp,139/tcp,445/tcp,965/tcp,2049/tcp,24007/tcp,24009/tcp,38465/tcp,38466/tcp,38468/tcp,38469/tcp,39543/tcp,49152/tcp,55863/tcp,111/udp,963/udp</p>
+<p>permanent=true</p>
+<p>zone=public</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p># Common backend setup for the hosts.</p>
+<p>[backend-setup]</p>
+<p>devices=vdb</p>
+<p>vgs=vg_gluster</p>
+<p>pools=pool_gluster</p>
+<p>lvs=lv_gluster</p>
+<p>mountpoints=/mnt/data</p>
+<p>brick_dirs=/mnt/data/brick1</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>[volume]</p>
+<p>action=create</p>
+<p>volname=sample_gluster_vol</p>
+<p>replica=yes</p>
+<p>replica_count=2</p>
+<p>force=yes</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>[clients]</p>
+<p>action=mount</p>
+<p>volname=sample_gluster_vol</p>
+<p>hosts=192.168.121.77</p>
+<p>fstype=glusterfs</p>
+<p>client_mount_points=/mnt/mountGluster</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>As you can see I just started defining the hosts involved in the installation/configuration process, after that I defined RHN subscription details and yum, firewalld configuration.</p>
+<p>The backend-setup, volume and clients sections refer to the real GlusterFS configuration, in this example I'll configure a volume with replica 2 on the four hosts and then I use one of these hosts to mount the final GlusterFS volume.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>The process is not so fast but at least is automated! <span aria-label="Happy" class="emoticon_happy emoticon-inline" style="height:16px;width:16px;"></span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>For testing the configuration file after defined all the needed values, you can just run (supposing you installed gdeploy by RPM):</p>
+<blockquote class="jive-quote"><p>[alex@freddy test_gluster]$ gdeploy -c 2x2-volume-create.conf </p>
+<p>...</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>In my case using vagrant machines I have to run it twice because lvm2 is not installed in my VMs and the yum install process it's executed only after the lvm setup (that fails in my case because of lvm2 missing package).</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Please note: for obtaining in a fast way the ip addresses from a vagrant multi-vms setup, you can just run:</p>
+<blockquote class="jive-quote"><p>[alex@freddy test_gluster]$ vagrant ssh-config | grep HostName | egrep -o [0-9.]+</p>
+<p>192.168.121.84</p>
+<p>192.168.121.89</p>
+<p>192.168.121.231</p>
+<p>192.168.121.77</p>
+</blockquote><p>One more thing: as I said before, gdeploy expects to use root user during ansible deployment, for that matter you should deploy your default SSH key under root's HOME for making gdeploy to work properly.</p>
+<p>You can complete it by running a simple Ansible's command like:</p>
+<pre class="jive_macro_quote jive_text_macro" data-renderedposition="8013.716796875_8_1482_104"><p>[alex@freddy test_gluster]$ ansible all -b -m authorized_key -a "user=root key={{ lookup('file', '/home/alex/.ssh/id_rsa.pub') }}"</p>
+<p>gluster3 | SUCCESS =&gt; {</p>
+<p>&nbsp;&nbsp;&nbsp; "changed": true, </p>
+<p>...</p>
+</pre><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>If everything worked fine it should end without any relevant errors and connecting to the chosen client you should find your GlusterFS volume mounted and ready to be used!</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<h1 id="jive_content_id_References">References</h1><p>For more information take a look to the following links.</p>
+<ol><li><a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fgithub.com%2Fgluster%2Fgdeploy" rel="nofollow" target="_blank">GitHub - gluster/gdeploy: Tool to deploy glusterfs</a></li><li><a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fgithub.com%2Fgluster%2Fgdeploy%2Ftree%2Fmaster%2Fexamples" rel="nofollow" target="_blank">gdeploy/examples at master · gluster/gdeploy · GitHub</a></li><li><a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=http%3A%2F%2Fdocs.ansible.com%2Fansible%2Fgluster_volume_module.html" rel="nofollow" target="_blank">gluster_volume - Manage GlusterFS volumes — Ansible Documentation</a></li></ol></div>
+
+
+
+<p>If you have any comments/questions please comment!</p>
