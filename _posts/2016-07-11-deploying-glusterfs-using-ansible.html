@@ -10,6 +10,8 @@ tags:
 - cfgmgmt
 - glusterfs
 - gluster
+- gdeploy
+- deployment
 - filesystem
 - distributed
 - replicated
@@ -39,7 +41,7 @@ tags:
 <blockquote class="jive-quote"><p>[alex@freddy test_gluster]$ cat init.yml</p>
 <p>- hosts: vagrant</p>
 <p>&nbsp; vars:</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RHN_username: <a class="jive-link-email-small" href="mailto:user@domain.com">aarrichi@redhat.com</a> <strong># Change it with your RHN username!</strong></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RHN_username: <a class="jive-link-email-small" href="mailto:user@domain.com">user@domain.com</a> <strong># Change it with your RHN username!</strong></p>
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RHN_poolname: "RH SKU"</p>
 <p>&nbsp; vars_prompt:</p>
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: "RHN_password"</p>
@@ -281,7 +283,7 @@ tags:
 <p>action=register</p>
 <p><a class="jive-link-email-small" href="mailto:username=user@domain.com">username=user@domain.com</a><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><strong># You should change this</strong></p>
 <p>password=MY_PASSWORD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong># You should change this</strong></p>
-<p>pool=8a85f9874011071c01407da00b997cb2&nbsp;&nbsp;&nbsp;&nbsp; <strong># You should change this</strong></p>
+<p>pool=8a8f981407da00b997cb2&nbsp;&nbsp;&nbsp;&nbsp; <strong># You should change this</strong></p>
 <p>repos=rhel-7-server-rpms,rhel-7-server-optional-rpms,rhel-7-server-extras-rpms,rh-gluster-3-for-rhel-7-server-rpms</p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
 <p>[yum]</p>
