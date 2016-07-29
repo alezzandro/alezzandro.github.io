@@ -1,0 +1,338 @@
+---
+layout: post
+title: 'Ansible and Vagrant: setup your testing lab in minutes!'
+date: '2016-07-29T09:39:24+01:00'
+tags:
+- redhat
+- configuration
+- server
+- howto
+- rhel
+- vagrant
+- box
+- build
+- iso
+- ansible
+- automatic
+- automate
+- management
+---
+
+
+<img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Ansible_Logo.png" />
+
+<h1 id="jive_content_id_Introduction">Introduction</h1><p>Looking at the upcoming sunset of OS1 platform and moving around different customer's sites, with all the network troubles you may expect, having a fast and always reliable way for creating a test lab could be very helpful.</p>
+<p>As you know Vagrant (from Hashicorp) established itself as one of the best tool for handling vm on development/testing environments.</p>
+<p>In this document I'll describe the few necessary steps for enabling use of Ansible with a Vagrant box (also with multiple boxes).</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><span style="text-decoration: underline;"><strong>Please note:</strong></span> I won't introduce you Ansible provisioning via VagrantFile, instead I'll show the usage of Ansible's Vagrant Dynamic Intentory.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<h1 id="jive_content_id_Prerequisites_Choose_a_Vagrant_box">Prerequisites: Choose a Vagrant box</h1><p>The first step is to choose the right vagrant box, no matter what you're trying to setup/test/troubleshoot/configure.. You have to use a valid, small, reliable vagrant box.</p>
+<p>Unfortunately we (as Red Hat) don't ship any RHEL as vagrant (apart from OSE all-in-one). For that matter you may use centos, freely available through Hashicorp cloud store:</p>
+<p><a class="jive-link-external-small" href="https://atlas.hashicorp.com/centos/boxes/7" rel="nofollow" target="_blank">Vagrant box centos/7 | Atlas by HashiCorp</a></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>By the way you may also use a RHEL boxes, many colleagues (me included) has written some articles to get a RHEL vagrant box set-up in minutes, please take a look at the following articles to gain more information:</p>
+<p><a class="jive-link-wiki-small" data-containerid="16369" data-containertype="2020" data-objectid="1034880" data-objecttype="102" href="http://alezzandro.com/how-to-create-rhel-based-vagrant-boxes/">How to create RHEL based Vagrant boxes</a> (authored by me)</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>PLEASE NOTE:</p>
+<p>*) In the next step I'll use a RHEL7 box created using my tutorial.</p>
+<p>*) I'm supposing you'll use a Fedora workstation, but I can bet that this should work also on OSX if you managed getting to work Vagrant and Virtualbox.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<h1 id="jive_content_id_Vagrant_configuration_and_setup">Vagrant configuration and setup</h1><p>First of all we need to create a VagrantFile for starting one or multiple instances.</p>
+<p>I've just written an example VagrantFile for a multi-instance setup:</p>
+<blockquote class="jive-quote"><p>[alex@freddy test_vagrant]$ cat Vagrantfile </p>
+<p># -*- mode: ruby -*-</p>
+<p># vi: set ft=ruby :</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p># All Vagrant configuration is done below. The "2" in Vagrant.configure</p>
+<p># configures the configuration version (we support older styles for</p>
+<p># backwards compatibility). Please don't change it unless you know what</p>
+<p># you're doing.</p>
+<p>Vagrant.configure(2) do |config|</p>
+<p>&nbsp; # The most common configuration options are documented and commented below.</p>
+<p>&nbsp; # For a complete reference, please see the online documentation at</p>
+<p><span>&nbsp; # </span><a class="" href="https://docs.vagrantup.com">https://docs.vagrantup.com</a><span>.</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp; # Every Vagrant development environment requires a box. You can search for</p>
+<p><span>&nbsp; # boxes at </span><a class="" href="https://atlas.hashicorp.com/search">https://atlas.hashicorp.com/search</a><span>.</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp; config.vm.define "webserver" do |webserver|</p>
+<p>&nbsp;&nbsp;&nbsp; webserver.vm.box = "rhel72"</p>
+<p>&nbsp;&nbsp;&nbsp; webserver.vm.provider :libvirt do |libvirt|</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libvirt.memory = 1024</p>
+<p>&nbsp;&nbsp;&nbsp; end</p>
+<p>&nbsp; end</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp; config.vm.define "database" do |database|</p>
+<p>&nbsp;&nbsp;&nbsp; database.vm.box = "rhel72"</p>
+<p>&nbsp;&nbsp;&nbsp; database.vm.provider :libvirt do |libvirt|</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libvirt.memory = 1024</p>
+<p>&nbsp;&nbsp;&nbsp; end</p>
+<p>&nbsp; end</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>end</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>I'll not focus on details about the Vagrant keywords, anyway as you can see I've defined two instances of which one be two a webserver and the other a database.</p>
+<p>I'm using as base box for the two instances the "rhel72" box [1], using the "libvirt" provider and 1GB of memory.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>After defining the VagrantFile, we can check that is all ok by running:</p>
+<blockquote class="jive-quote"><p>[alex@freddy test_vagrant]$ vagrant status</p>
+<p>Current machine states:</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>webserver&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; not created (libvirt)</p>
+<p>database&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; not created (libvirt)</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>This environment represents multiple VMs. The VMs are all listed</p>
+<p>above with their current state. For more information about a specific</p>
+<p>VM, run `vagrant status NAME`.</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>And then try to starting the instances by running:</p>
+<blockquote class="jive-quote"><p>[alex@freddy test_vagrant]$ vagrant up</p>
+<p>Bringing machine 'webserver' up with 'libvirt' provider...</p>
+<p>Bringing machine 'database' up with 'libvirt' provider...</p>
+<p>==&gt; database: Creating image (snapshot of base box volume).</p>
+<p>==&gt; webserver: Creating image (snapshot of base box volume).</p>
+<p>==&gt; database: Creating domain with the following settings...</p>
+<p>==&gt; webserver: Creating domain with the following settings...</p>
+<p>==&gt; database:&nbsp; -- Name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; test_vagrant_database</p>
+<p>==&gt; webserver:&nbsp; -- Name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; test_vagrant_webserver</p>
+<p>==&gt; database:&nbsp; -- Domain type:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; kvm</p>
+<p>==&gt; webserver:&nbsp; -- Domain type:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; kvm</p>
+...</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>After running some "vagrant ssh" against the single instances to check if all it's working as expected, we can now focus on the Ansible integration.</p>
+<p>First of all we need to download the latest (Ansible's Vagrant script):</p>
+<blockquote class="jive-quote"><p>[alex@freddy test_vagrant]$ wget <a class="jive-link-external-small" href="https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/vagrant.py" rel="nofollow" target="_blank">https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/vagrant.py</a></p>
+</blockquote><p>Please note that what I'll introduce you is not the Ansible provisioning via VagrantFile [4], but the usage of Ansible's Vagrant Dynamic Intentory [3].</p>
+<p>Using this Dynamic Inventory you can test your existing playbook without any modification and/or use with Ansible. You will use your vagrant instances like any other vm/baremetal hosts.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Give to the script the execute permission and try it! You should run it inside your current vagrant folder, the path where you stored your VagrantFile and where you run "<em>vagrant *</em>" commands.</p>
+<blockquote class="jive-quote"><p>[alex@freddy test_vagrant]$ chmod +x vagrant.py</p>
+<p>[alex@freddy test_vagrant]$ vagrant.py --list all</p>
+<p>{"vagrant": ["webserver", "database"], "_meta": {"hostvars": {"webserver": {"ansible_ssh_host": "192.168.121.171", "ansible_ssh_port": "22", "ansible_ssh_user": "vagrant", "ansible_ssh_private_key_file": "/home/alex/Projects/Ansible/test_vagrant/.vagrant/machines/webserver/libvirt/private_key"}, "database": {"ansible_ssh_host": "192.168.121.105", "ansible_ssh_port": "22", "ansible_ssh_user": "vagrant", "ansible_ssh_private_key_file": "/home/alex/Projects/Ansible/test_vagrant/.vagrant/machines/database/libvirt/private_key"}}}}</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+</blockquote><p>As you can see the two machines are automatically placed under "vagrant" group, remember that while we'll try to run an Ansible Playbook.</p>
+<p>Pay attention that Ansible expect the Dynamic Inventory's output to be a JSON blob. So in case you're thinking of writing up a custom dynamic inventory, keep it in mind!</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>If your output looks like the one I showed you, then you can consider the script working.</p>
+<p>For easily executing the dynamic inventory script you can place it in one of your PATH.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Let's try it with Ansible:</p>
+<blockquote class="jive-quote"><p>[alex@freddy test_vagrant]$ ansible all -i ./vagrant.py -m ping</p>
+<p>database | SUCCESS =&gt; {</p>
+<p>&nbsp;&nbsp;&nbsp; "changed": false, </p>
+<p>&nbsp;&nbsp;&nbsp; "ping": "pong"</p>
+<p>}</p>
+<p>webserver | SUCCESS =&gt; {</p>
+<p>&nbsp;&nbsp;&nbsp; "changed": false, </p>
+<p>&nbsp;&nbsp;&nbsp; "ping": "pong"</p>
+<p>}</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>As you can see, we've chosen to run Ansible's module "<strong>ping</strong>" against "<strong>all</strong>" hosts using a dynamic "<strong>inventory</strong>" called "<strong>vagrant.py</strong>".</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Or maybe we can just run one command on a single host:</p>
+<blockquote class="jive-quote"><p>[alex@freddy test_vagrant]$ ansible webserver -i ./vagrant.py -m command -a "uptime"</p>
+<p>webserver | SUCCESS | rc=0 &gt;&gt;</p>
+<p> 09:34:20 up 7 min,&nbsp; 1 user,&nbsp; load average: 0.00, 0.03, 0.05</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<h1 id="jive_content_id_Default_inventory_vagrantpy">Default inventory: vagrant.py</h1><p>Setting the default dynamic inventory can be done by editing /etc/ansible/ansible.cfg</p>
+<blockquote class="jive-quote"><p>[alex@freddy test_vagrant]$ cat /etc/ansible/ansible.cfg |grep inventory</p>
+<p>#inventory&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = /etc/ansible/hosts</p>
+<p><strong>inventory&nbsp;&nbsp;&nbsp; = /home/alex/bin/vagrant.py</strong></p>
+<p># if inventory variables overlap, does the higher precedence one win</p>
+<p># These values may be set per host via the ansible_module_compression inventory</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>That's all, let's try an Ansible's playbook now!</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<h1 id="jive_content_id_Test_Download_and_execute_a_playbook">Test: Download and execute a playbook</h1><p>Just for testing the Dynamic Inventory script I wrote one sample playbook for:</p>
+<ul><li>subscribing the systems to RHN</li>
+<li>enabling required repositories</li>
+<li>updating to latest packages to the latest versions</li>
+</ul><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>You'll find below the playbook that we'll use for registering the vagrant instances to RHN and for updating the systems.</p>
+<p><strong>[Note: Don't forget to change RHN_username, to your RHN user!]</strong></p>
+<blockquote class="jive-quote"><p>[alex@freddy test_vagrant]$ cat init.yml </p>
+<p>- hosts: vagrant</p>
+<p>&nbsp; vars:</p>
+<p><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RHN_username: </span><a class="jive-link-email-small" href="mailto:aarrichi@redhat.com">aarrichi@redhat.com</a></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RHN_poolname: .*Employee.*</p>
+<p>&nbsp; vars_prompt:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: "RHN_password"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; prompt: Please input RHN password</p>
+<p>&nbsp; tasks:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: Checking if it's already registered to RHN</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; become: yes</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ignore_errors: True</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shell: "subscription-manager status"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; register: result</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: Subscribe to RHN</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; become: yes</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; redhat_subscription: username={{ RHN_username }} password={{ RHN_password }} pool={{ RHN_poolname }}</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; when: result.rc|int &gt; 0</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: Enable chosen repositories</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; become: yes</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; command: "subscription-manager repos --disable '*' --enable rhel-7-server-rpms --enable rhel-7-server-optional-rpms --enable rhel-7-server-extras-rpms"</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: Update the system</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; become: yes</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yum: state=latest name='*'</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Let's execute the playbook for registering our vagrant instances:</p>
+<blockquote class="jive-quote"><p>[alex@freddy test_vagrant]$ ansible-playbook init.yml </p>
+<p>Please input RHN password: </p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>PLAY [vagrant] *****************************************************************</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>TASK [setup] *******************************************************************</p>
+<p>ok: [database]</p>
+<p>ok: [webserver]</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>TASK [Checking if it's already registered to RHN] ******************************</p>
+<p>fatal: [database]: FAILED! =&gt; {"changed": true, "cmd": "subscription-manager status", "delta": "0:00:02.471373", "end": "2016-06-23 11:37:50.194596", "failed": true, "rc": 1, "start": "2016-06-23 11:37:47.723223", "stderr": "", "stdout": "+-------------------------------------------+\n&nbsp;&nbsp; System Status Details\n+-------------------------------------------+\nOverall Status: Unknown", "stdout_lines": ["+-------------------------------------------+", "&nbsp;&nbsp; System Status Details", "+-------------------------------------------+", "Overall Status: Unknown"], "warnings": []}</p>
+<p>...ignoring</p>
+<p>fatal: [webserver]: FAILED! =&gt; {"changed": true, "cmd": "subscription-manager status", "delta": "0:00:02.465741", "end": "2016-06-23 11:37:50.790684", "failed": true, "rc": 1, "start": "2016-06-23 11:37:48.324943", "stderr": "", "stdout": "+-------------------------------------------+\n&nbsp;&nbsp; System Status Details\n+-------------------------------------------+\nOverall Status: Unknown", "stdout_lines": ["+-------------------------------------------+", "&nbsp;&nbsp; System Status Details", "+-------------------------------------------+", "Overall Status: Unknown"], "warnings": []}</p>
+<p>...ignoring</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>TASK [Subscribe to RHN] ********************************************************</p>
+<p>changed: [webserver]</p>
+<p>changed: [database]</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>TASK [Enable chosen repositories] **********************************************</p>
+<p>changed: [webserver]</p>
+<p>changed: [database]</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>TASK [Update the system] *******************************************************</p>
+<p>changed: [webserver]</p>
+<p>changed: [database]</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>PLAY RECAP *********************************************************************</p>
+<p>database&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : ok=5&nbsp;&nbsp;&nbsp; changed=3&nbsp;&nbsp;&nbsp; unreachable=0&nbsp;&nbsp;&nbsp; failed=0&nbsp;&nbsp; </p>
+<p>webserver&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : ok=5&nbsp;&nbsp;&nbsp; changed=3&nbsp;&nbsp;&nbsp; unreachable=0&nbsp;&nbsp;&nbsp; failed=0&nbsp; </p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>If all is gone ok, we can proceed to the next step, download a sample ansible playbook and run it!</p>
+<p>We can download "ansible-examples" github's project:</p>
+<blockquote class="jive-quote"><p><span>[alex@freddy test_vagrant]$ git clone </span><a class="" href="https://github.com/ansible/ansible-examples">https://github.com/ansible/ansible-examples</a></p>
+<p>Cloning into 'ansible-examples'...</p>
+<p>remote: Counting objects: 2235, done.</p>
+<p>remote: Total 2235 (delta 0), reused 0 (delta 0), pack-reused 2235</p>
+<p>Receiving objects: 100% (2235/2235), 3.81 MiB | 360.00 KiB/s, done.</p>
+<p>Resolving deltas: 100% (641/641), done.</p>
+<p>Checking connectivity... done.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>[alex@freddy test_vagrant]$ ll ansible-examples/lamp_simple_rhel7/</p>
+<p>total 24</p>
+<p>drwxrwxr-x. 2 alex alex 4096 Jun 23 15:29 group_vars</p>
+<p>-rw-rw-r--. 1 alex alex&nbsp;&nbsp; 59 Jun 23 15:29 hosts</p>
+<p>-rw-rw-r--. 1 alex alex&nbsp; 237 Jun 23 15:29 LICENSE.md</p>
+<p>-rw-rw-r--. 1 alex alex 1163 Jun 23 15:29 README.md</p>
+<p>drwxrwxr-x. 5 alex alex 4096 Jun 23 15:29 roles</p>
+<p>-rw-rw-r--. 1 alex alex&nbsp; 411 Jun 23 15:29 site.yml</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>This example playbook uses two groups of hosts: "webservers" and "dbservers".</p>
+<p>So we need to setup a mixed dynamic/static inventory.</p>
+<p>For doing it we can create a directory and place our "vagrant.py" dynamic inventory script inside with the hosts file provided by the ansible example playbook:</p>
+<blockquote class="jive-quote"><p>[alex@freddy test_vagrant]$ mkdir inventory</p>
+<p>[alex@freddy test_vagrant]$ cp ansible-examples/lamp_simple_rhel7/hosts inventory/</p>
+<p>[alex@freddy test_vagrant]$ cp vagrant.py inventory/</p>
+<p>[alex@freddy test_vagrant]$ ll inventory/</p>
+<p>total 8</p>
+<p>-rw-rw-r--. 1 alex alex&nbsp;&nbsp; 59 Jun 23 16:01 hosts</p>
+<p>-rwxrwxr-x. 1 alex alex 3960 Jun 23 16:01 vagrant.py</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>After that, you need to edit the hosts file like this:</p>
+<blockquote class="jive-quote"><p>[alex@freddy test_vagrant]$ cat inventory/hosts</p>
+<p>[webservers]</p>
+<p>webserver</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>[dbservers]</p>
+<p>database</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Finally we can test it!</p>
+<p>As you can see by the command below we invoke the command specifying the "inventory" folder, the username for connection ("-u vagrant") and the option "-b" for letting the script become root with "sudo" command:</p>
+<blockquote class="jive-quote"><p>[alex@freddy test_vagrant]$ ansible-playbook -i inventory ansible-examples/lamp_simple_rhel7/site.yml -u vagrant -b</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>PLAY [apply common configuration to all nodes] *********************************</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>TASK [setup] *******************************************************************</p>
+<p>ok: [database]</p>
+<p>ok: [webserver]</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>TASK [common : Install ntp] ****************************************************</p>
+<p>changed: [webserver]</p>
+<p>changed: [database]</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>TASK [common : Configure ntp file] *********************************************</p>
+<p>changed: [webserver]</p>
+<p>changed: [database]</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>TASK [common : Start the ntp service] ******************************************</p>
+<p>changed: [webserver]</p>
+<p>changed: [database]</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>RUNNING HANDLER [common : restart ntp] *****************************************</p>
+<p>changed: [database]</p>
+<p>changed: [webserver]</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+...<br><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>PLAY RECAP *********************************************************************</p>
+<p>database&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : ok=16&nbsp;&nbsp; changed=14&nbsp;&nbsp; unreachable=0&nbsp;&nbsp;&nbsp; failed=0&nbsp;&nbsp; </p>
+<p>webserver&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : ok=14&nbsp;&nbsp; changed=10&nbsp;&nbsp; unreachable=0&nbsp;&nbsp;&nbsp; failed=0&nbsp;&nbsp; </p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>If all it's gone ok, we can grab the ip address of our webserver:</p>
+<blockquote class="jive-quote"><p>[alex@freddy test_vagrant]$ vagrant.py --list all | json_reformat </p>
+<p>{</p>
+<p>&nbsp;&nbsp;&nbsp; "vagrant": [</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "webserver",</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "database"</p>
+<p>&nbsp;&nbsp;&nbsp; ],</p>
+<p>&nbsp;&nbsp;&nbsp; "_meta": {</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "hostvars": {</p>
+<p><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "webserver": {</strong></p>
+<p><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "ansible_ssh_host": "192.168.121.171",</strong></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "ansible_ssh_port": "22",</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "ansible_ssh_user": "vagrant",</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "ansible_ssh_private_key_file": "/home/alex/Projects/Ansible/test_vagrant/.vagrant/machines/webserver/libvirt/private_key"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; },</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "database": {</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "ansible_ssh_host": "192.168.121.105",</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "ansible_ssh_port": "22",</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "ansible_ssh_user": "vagrant",</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "ansible_ssh_private_key_file": "/home/alex/Projects/Ansible/test_vagrant/.vagrant/machines/database/libvirt/private_key"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p>&nbsp;&nbsp;&nbsp; }</p>
+<p>}</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>And then we can test if the webserver is running fine.</p>
+<p>Quoting the ansible github page:</p>
+<blockquote class="jive-quote"><span style="color: #333333; font-family: 'Helvetica Neue',Helvetica,'Segoe UI',Arial,freesans,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol'; font-style: normal; font-weight: normal; text-align: start; text-indent: 0px; font-size: 10pt;">Once done, you can check the results by browsing to <a class="" href="http://localhost/index.php">http://localhost/index.php</a>. <br>You should see a simple test page and a list of databases retrieved from the database server.</span></blockquote><blockquote class="jive-quote"><p><span>[alex@freddy test_vagrant]$ curl </span><a class="" href="http://192.168.121.171/index.php">http://192.168.121.171/index.php</a></p>
+<p>&lt;html&gt;</p>
+<p> &lt;head&gt;</p>
+<p>&nbsp; &lt;title&gt;Ansible Application&lt;/title&gt;</p>
+<p> &lt;/head&gt;</p>
+<p> &lt;body&gt;</p>
+<p> &lt;/br&gt;</p>
+<p><span>&nbsp; &lt;a href=</span><a class="" href="http://192.168.121.171/index.html">http://192.168.121.171/index.html</a><span>&gt;Homepage&lt;/a&gt;</span></p>
+<p> &lt;/br&gt;</p>
+<p>Hello, World! I am a web server configured using Ansible and I am : localhost.localdomain&lt;/BR&gt;List of Databases: &lt;/BR&gt;information_schema</p>
+<p>foodb</p>
+<p>mysql</p>
+<p>performance_schema</p>
+<p>test</p>
+<p>&lt;/body&gt;</p>
+<p>&lt;/html&gt;</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>That's all!</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<h1 id="jive_content_id_References">References</h1>
+<p>[1]&nbsp; <a class="jive-link-wiki-small" data-containerid="16369" data-containertype="2020" data-objectid="1034880" data-objecttype="102" href="http://alezzandro.com/how-to-create-rhel-based-vagrant-boxes/">How to create RHEL based Vagrant boxes</a></p>
+<p>[2]&nbsp; <a class="jive-link-external-small" href="https://github.com/ansible/ansible/blob/devel/contrib/inventory/vagrant.py" rel="nofollow" target="_blank">ansible/vagrant.py at devel · ansible/ansible · GitHub</a></p>
+<p>[3]&nbsp; <a class="jive-link-external-small" href="http://docs.ansible.com/ansible/guide_vagrant.html" rel="nofollow" target="_blank">Using Vagrant and Ansible — Ansible Documentation</a></p>
+<p>[4]&nbsp; <a class="jive-link-external-small" href="https://github.com/ansible/ansible-examples" rel="nofollow" target="_blank">GitHub - ansible/ansible-examples: A few starter examples of ansible playbooks, to show features and how they work toget…</a></p>
+
