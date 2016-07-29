@@ -31,7 +31,7 @@ tags:
 <p>I'll describe two ways:</p>
 <ul><li>manual: using a custom playbook</li><li>automatic: using gdeploy tool</li></ul><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
 <p>Please note: for the whole tests I'm using vagrant virtual machines and vagrant dynamic inventory script.</p>
-<p>For more information you can refer to: <a class="jive-link-wiki-small" data-containerid="7045" data-containertype="700" data-objectid="1084146" data-objecttype="102" href="https://mojo.redhat.com/docs/DOC-1084146">Ansible and Vagrant: setup your testing lab in minutes!</a></p>
+<!--<p>For more information you can refer to: <a class="jive-link-wiki-small" data-containerid="7045" data-containertype="700" data-objectid="1084146" data-objecttype="102" href="https://mojo.redhat.com/docs/DOC-1084146">Ansible and Vagrant: setup your testing lab in minutes!</a></p>-->
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
 <h1 id="jive_content_id_Manual_Writing_a_custom_playbook">Manual: Writing a custom playbook</h1><p>Just for testing Ansible features I wrote two test playbooks for:</p>
 <ul><li>subscribing the systems to RHN</li><li>enabling Gluster repositories</li><li>updating the systems</li></ul><p>And then:</p>
@@ -256,9 +256,9 @@ tags:
 <p>For that matter you have to use _only_ it's cluster configuration file defining the inventory and all the parameters inside.</p>
 <p>Another annoying fact is that you cannot use Ansible's standard way for hosts defining, gdeploy hosts section it's only a list of addresses. This implies that you will able to use _only_ root to deploy GlusterFS using gdeploy through your default SSH key.</p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
-<p>For more information on gdeploy you can take a look at: <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fgithub.com%2Fgluster%2Fgdeploy" rel="nofollow" target="_blank">GitHub - gluster/gdeploy: Tool to deploy glusterfs</a></p>
+<p>For more information on gdeploy you can take a look at: <a class="jive-link-external-small" href="https://github.com/gluster/gdeploy" rel="nofollow" target="_blank">GitHub - gluster/gdeploy: Tool to deploy glusterfs</a></p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
-<p>The latest RPM version of gdeploy can be downloaded at: <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=http%3A%2F%2Fdownload.gluster.org%2Fpub%2Fgluster%2Fgdeploy%2FLATEST%2F" rel="nofollow" target="_blank">Index of /pub/gluster/gdeploy/LATEST</a></p>
+<p>The latest RPM version of gdeploy can be downloaded at: <a class="jive-link-external-small" href="https://download.gluster.org/pub/gluster/gdeploy/LATEST/" rel="nofollow" target="_blank">Index of /pub/gluster/gdeploy/LATEST</a></p>
 <p>You can use the community RPM version also to deploy RH GlusterFS packages on RHEL machines.</p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
 <p>Let's take a look on a cluster.conf I've setup for configuring 4 gluster vm from zero:</p>
@@ -348,7 +348,9 @@ tags:
 <p>If everything worked fine it should end without any relevant errors and connecting to the chosen client you should find your GlusterFS volume mounted and ready to be used!</p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
 <h1 id="jive_content_id_References">References</h1><p>For more information take a look to the following links.</p>
-<ol><li><a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fgithub.com%2Fgluster%2Fgdeploy" rel="nofollow" target="_blank">GitHub - gluster/gdeploy: Tool to deploy glusterfs</a></li><li><a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fgithub.com%2Fgluster%2Fgdeploy%2Ftree%2Fmaster%2Fexamples" rel="nofollow" target="_blank">gdeploy/examples at master · gluster/gdeploy · GitHub</a></li><li><a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=http%3A%2F%2Fdocs.ansible.com%2Fansible%2Fgluster_volume_module.html" rel="nofollow" target="_blank">gluster_volume - Manage GlusterFS volumes — Ansible Documentation</a></li></ol></div>
+<ol><li><a class="jive-link-external-small" href="https://github.com/gluster/gdeploy" rel="nofollow" target="_blank">GitHub - gluster/gdeploy: Tool to deploy glusterfs</a></li>
+<li><a class="jive-link-external-small" href="https://github.com/gluster/gdeploy/tree/master/examples" rel="nofollow" target="_blank">gdeploy/examples at master · gluster/gdeploy · GitHub</a></li>
+<li><a class="jive-link-external-small" href="https://docs.ansible.com/ansible/gluster_volume_module.html" rel="nofollow" target="_blank">gluster_volume - Manage GlusterFS volumes — Ansible Documentation</a></li></ol></div>
 
 
 

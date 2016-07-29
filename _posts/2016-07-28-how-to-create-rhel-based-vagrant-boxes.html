@@ -35,15 +35,16 @@ tags:
 <p><span style="font-family: courier new,courier;"># vagrant plugin install vagrant-libvirt</span></p>
 <p><span style="font-family: courier new,courier;"># sudo yum install vagrant-libvirt</span></p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
-<h1>Automatic Build of RHEL Vagrant Boxes</h1><p>Taking a look to the great article of <a class="jive-link-profile-small jiveTT-hover-user" data-containerid="-1" data-containertype="-1" data-objectid="28544" data-objecttype="3" href="https://mojo.redhat.com/people/marcsilv">Marcelo Silva</a> (<a class="jive-link-blog-small" data-containerid="933751" data-containertype="37" data-objectid="944420" data-objecttype="38" href="https://mojo.redhat.com/people/marcsilv/blog/2016/04/14/how-to-create-your-own-rhel-vagrant-boxes">How to create your own RHEL Vagrant Boxes</a> ) and from some ideas by my colleague <a class="jive-link-profile-small jiveTT-hover-user" data-containerid="-1" data-containertype="-1" data-objectid="15007" data-objecttype="3" href="https://mojo.redhat.com/people/fnebiolo">Federico Nebiolo</a> I've started experimenting on automating the build process of RHEL based vagrant boxes.</p>
-<p>The process doesn't require any dvd or image pre-downloaded on your system. The process itself is all network based and requires only a Linux system with libvirt installed.</p>
+<h1>Automatic Build of RHEL Vagrant Boxes</h1>
+<p>I've started experimenting on automating the build process of RHEL based vagrant boxes.</p>
+<p>The process requires only a dvd or ISO image pre-downloaded on your system. The process requires only a Linux system with libvirt installed.</p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
 <p><strong>REQUIREMENTS:</strong></p>
-<p>- Just one: Red Hat VPN access (the yum repositories are available only through VPN).</p>
+<p>- Just one: Red Hat Enterprise Linux ISO.</p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
 <p>PLEASE NOTE: in this example I'll show you how to create a rhel72 vagrant box, anyway you can change the kickstart file according to your needs.</p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
-<p><span style="font-family: courier new,courier;"># git clone <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fgitlab.cee.redhat.com%2Faarrichi%2Fvagrant-rhel72-box.git" rel="nofollow" target="_blank">https://gitlab.cee.redhat.com/aarrichi/vagrant-rhel72-box.git</a></span></p>
+<p><span style="font-family: courier new,courier;"># git clone <a class="jive-link-external-small" href="https://github.com/alezzandro/vagrant-rhel-box" rel="nofollow" target="_blank">https://github.com/alezzandro/vagrant-rhel-box</a></span></p>
 <p><span style="font-family: courier new,courier;"># cd vagrant-rhel72-box</span></p>
 <p>Let's create a disk for our box, in my case I just chose to create a 20G disk, the installation size will be less than 1G, the disk is also thin-provisioned, so we won't waste any space creating a larger disk.</p>
 <p><span style="font-family: courier new,courier;"># qemu-img create -f qcow2 -o compat=0.10 rhel-vagrant-7.2.x86_64.qcow2 20G</span></p>
@@ -84,8 +85,6 @@ tags:
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
 <p>That's all! <span aria-label="Happy" class="emoticon_happy emoticon-inline" style="height:16px;width:16px;"></span></p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
-<p>[1] Link to original kickstart file for rhel-cloud: <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=http%3A%2F%2Fgit.app.eng.bos.redhat.com%2Fgit%2Fspin-kickstarts.git%2Ftree%2Frhel7" rel="nofollow" target="_blank">http://git.app.eng.bos.redhat.com/git/spin-kickstarts.git/tree/rhel7</a></p>
-<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
 <h1>Manual build of a Vagrant-ready virtual machine</h1><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
 <p>This is the manual process.</p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
@@ -100,7 +99,7 @@ tags:
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
 <p>After that we need to download and set the vagrant insecure public key needed by the tool for automatically login into the system:</p>
 <p><span style="font-family: courier new,courier;"># su - vagrant</span></p>
-<p><span style="font-family: courier new,courier;"># wget <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmitchellh%2Fvagrant%2Fmaster%2Fkeys%2Fvagrant.pub" rel="nofollow" target="_blank">https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant.pub</a></span></p>
+<p><span style="font-family: courier new,courier;"># wget <a class="jive-link-external-small" href="https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant.pub" rel="nofollow" target="_blank">https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant.pub</a></span></p>
 <p><span style="font-family: courier new,courier;"># mkdir .ssh</span></p>
 <p><span style="font-family: courier new,courier;"># mv vagrant.pub .ssh/authorized_keys</span></p>
 <p><span style="font-family: courier new,courier;"># chown -R vagrant:vagrant .ssh/</span></p>
@@ -118,9 +117,9 @@ tags:
 <p>That's all! Power down your virtual machine, we're ready to create our box!</p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
 <h2>Pack your Vagrant box</h2><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
-<p>Start downloading the content of <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fgithub.com%2Fadrahon%2Fvagrant-kvm%2Ftree%2Fmaster%2Fexample_box" rel="nofollow" target="_blank">https://github.com/adrahon/vagrant-kvm/tree/master/example_box</a> you have to take all the files (Vagrantfile, box.xml and metadata.json).</p>
+<p>Start downloading the content of <a class="jive-link-external-small" href="https://github.com/adrahon/vagrant-kvm/tree/master/example_box" rel="nofollow" target="_blank">https://github.com/adrahon/vagrant-kvm/tree/master/example_box</a> you have to take all the files (Vagrantfile, box.xml and metadata.json).</p>
 <p>You can do that also by a simple git clone command:</p>
-<p><span style="font-family: courier new,courier;"># git clone <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fgithub.com%2Fadrahon%2Fvagrant-kvm.git" rel="nofollow" target="_blank">https://github.com/adrahon/vagrant-kvm.git</a> .</span></p>
+<p><span style="font-family: courier new,courier;"># git clone <a class="jive-link-external-small" href="https://github.com/adrahon/vagrant-kvm.git" rel="nofollow" target="_blank">https://github.com/adrahon/vagrant-kvm.git</a> .</span></p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
 <p>Then start editing your brand new box, first of all we need to get the disk source file and place it on your working directory (pay attention: the vm should be shutted down!):</p>
 <p><span style="font-family: courier new,courier;"># sudo cp /var/lib/libvirt/images/something.qcow2 </span><span style="font-family: courier new,courier;"><strong>box.img</strong></span></p>

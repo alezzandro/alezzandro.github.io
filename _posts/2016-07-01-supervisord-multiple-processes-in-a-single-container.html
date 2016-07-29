@@ -42,7 +42,7 @@ tags:
 <p>But now let's take a look to the Dockerfile itself:</p>
 <blockquote class="jive-quote"><p>FROM rhel7</p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
-<p><span>RUN yum install -y </span><a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fdl.fedoraproject.org%2Fpub%2Fepel%2Fepel-release-latest-7.noarch.rpm" rel="nofollow" target="_blank">https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm</a></p>
+<p><span>RUN yum install -y </span><a class="jive-link-external-small" href="https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm" rel="nofollow" target="_blank">https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm</a></p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
 <p>RUN yum install -y postfix supervisor rsyslog</p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
@@ -75,7 +75,7 @@ tags:
 </blockquote><p>As you can see in the readlog program definition I'm setting the proper stdout for tail to supervisord stdout.</p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
 <p>The other two file "listen.conf" and "rsyslog.conf" are related to rsyslog itself and they contains edits suggested by a project-atomic blog post:</p>
-<p><a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=http%3A%2F%2Fwww.projectatomic.io%2Fblog%2F2014%2F09%2Frunning-syslog-within-a-docker-container%2F" rel="nofollow" target="_blank">Running Syslog Within a Docker Container —Project Atomic</a> </p>
+<p><a class="jive-link-external-small" href="http://www.projectatomic.io/blog/2014/09/running-syslog-within-a-docker-container/" rel="nofollow" target="_blank">Running Syslog Within a Docker Container —Project Atomic</a> </p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
 <p>Just for quoting it:</p>
 <blockquote class="jive-quote"><p>The problem was that in RHEL7 and Fedora we now use journald, which listens on /dev/log for incoming messages. In RHEL7 and Fedora, rsyslog actually reads messages from the journal via its API by default.</p>
@@ -88,8 +88,8 @@ tags:
 <p>I've successfully tested the container in various OpenShift environments, mainly as SMTP server (or with proper customization to the config file, as SMTP Relay server).</p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
 <p>For more information please refer to:</p>
-<p>&nbsp; [1] <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fgithub.com%2Falezzandro%2Fpostfix-docker" rel="nofollow" target="_blank">GitHub - alezzandro/postfix-docker: Git repo for automated build of a postfix based docker container ready for OpenShift…</a> </p>
-<p>&nbsp; [2] <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fhub.docker.com%2Fr%2Falezzandro%2Fpostfix%2F" rel="nofollow" target="_blank">https://hub.docker.com/r/alezzandro/postfix/</a> </p>
-<p>&nbsp; [3] Postfix container used in a persistent Gitlab OpenShift Template: <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fgithub.com%2Fsdellang%2Fgitlab-openshift-persistent" rel="nofollow" target="_blank">GitHub - sdellang/gitlab-openshift-persistent</a> </p>
+<p>&nbsp; [1] <a class="jive-link-external-small" href="https://github.com/alezzandro/postfix-docker" rel="nofollow" target="_blank">GitHub - alezzandro/postfix-docker: Git repo for automated build of a postfix based docker container ready for OpenShift…</a> </p>
+<p>&nbsp; [2] <a class="jive-link-external-small" href="https://hub.docker.com/r/alezzandro/postfix/" rel="nofollow" target="_blank">https://hub.docker.com/r/alezzandro/postfix/</a> </p>
+<p>&nbsp; [3] Postfix container used in a persistent Gitlab OpenShift Template: <a class="jive-link-external-small" href="https://github.com/sdellang/gitlab-openshift-persistent" rel="nofollow" target="_blank">GitHub - sdellang/gitlab-openshift-persistent</a> </p>
 </div>
 <p>If you have any comments/questions please comment!</p>
