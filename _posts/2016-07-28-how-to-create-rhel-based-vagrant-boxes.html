@@ -1,0 +1,243 @@
+---
+layout: post
+title: 'How to create RHEL based Vagrant boxes'
+date: '2016-07-28T09:39:24+01:00'
+tags:
+- redhat
+- configuration
+- server
+- howto
+- rhel
+- vagrant
+- box
+- build
+- iso
+- install
+- automatic
+---
+
+
+<img src="https://upload.wikimedia.org/wikipedia/en/thumb/6/6c/RedHat.svg/320px-RedHat.svg.png" />
+
+<h1>Introduction</h1><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>How many times you needed a fast-way to test your POC?</p>
+<p>Vagrant is a system tool that lets you easily start and stop a virtual machine exposing the only thing you need: ssh console.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Every vagrant box is composed by a disk image file, some metadata related to the hypervisor chosen by the author and a default Vagrantfile.</p>
+<p>A Vagrantfile is nothing more than a vm descriptor file. You can control vm memory, network etc, for more information about a Vagrantfile I suggest you take a look into the online documentation. A default Vagrantfile is generated through the command "vagrant init box_name" directly in the current user dir.</p>
+<p>Vagrant uses a well-known user called "vagrant" created with default password "vagrant", this user has been added to /etc/sudoers file (previously by the author) so he can obtain super-user access to the whole machine without password.</p>
+<p>Vagrant tool can easily login as "vagrant" user thanks to a public insecure key placed inside .ssh/authorized_keys file. This key will be automatically replaced by Vagrant itself at first boot.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<h1>Prerequisites</h1><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>This short how to requires Vagrant plugin named: vagrant-libvirt.</p>
+<p>You can obtain it through the following commands on your Fedora system (userspace or through yum):</p>
+<p><span style="font-family: courier new,courier;"># vagrant plugin install vagrant-libvirt</span></p>
+<p><span style="font-family: courier new,courier;"># sudo yum install vagrant-libvirt</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<h1>Automatic Build of RHEL Vagrant Boxes</h1><p>Taking a look to the great article of <a class="jive-link-profile-small jiveTT-hover-user" data-containerid="-1" data-containertype="-1" data-objectid="28544" data-objecttype="3" href="https://mojo.redhat.com/people/marcsilv">Marcelo Silva</a> (<a class="jive-link-blog-small" data-containerid="933751" data-containertype="37" data-objectid="944420" data-objecttype="38" href="https://mojo.redhat.com/people/marcsilv/blog/2016/04/14/how-to-create-your-own-rhel-vagrant-boxes">How to create your own RHEL Vagrant Boxes</a> ) and from some ideas by my colleague <a class="jive-link-profile-small jiveTT-hover-user" data-containerid="-1" data-containertype="-1" data-objectid="15007" data-objecttype="3" href="https://mojo.redhat.com/people/fnebiolo">Federico Nebiolo</a> I've started experimenting on automating the build process of RHEL based vagrant boxes.</p>
+<p>The process doesn't require any dvd or image pre-downloaded on your system. The process itself is all network based and requires only a Linux system with libvirt installed.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><strong>REQUIREMENTS:</strong></p>
+<p>- Just one: Red Hat VPN access (the yum repositories are available only through VPN).</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>PLEASE NOTE: in this example I'll show you how to create a rhel72 vagrant box, anyway you can change the kickstart file according to your needs.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><span style="font-family: courier new,courier;"># git clone <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fgitlab.cee.redhat.com%2Faarrichi%2Fvagrant-rhel72-box.git" rel="nofollow" target="_blank">https://gitlab.cee.redhat.com/aarrichi/vagrant-rhel72-box.git</a></span></p>
+<p><span style="font-family: courier new,courier;"># cd vagrant-rhel72-box</span></p>
+<p>Let's create a disk for our box, in my case I just chose to create a 20G disk, the installation size will be less than 1G, the disk is also thin-provisioned, so we won't waste any space creating a larger disk.</p>
+<p><span style="font-family: courier new,courier;"># qemu-img create -f qcow2 -o compat=0.10 rhel-vagrant-7.2.x86_64.qcow2 20G</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>After that we can review the command inside the build.sh script:</p>
+<p><span style="font-family: courier new,courier;">$ cat build.sh </span></p>
+<p><span style="font-family: courier new,courier;">#!/bin/bash</span></p>
+<p><span style="font-family: courier new,courier;">set -x</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><span style="font-family: courier new,courier;">tree=../../rhel-server-7.2-x86_64-dvd.iso</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><span style="font-family: courier new,courier;">virt-install --connect=qemu:///system \</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; --network=bridge:virbr0 \</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; --initrd-inject=./rhel-7.2-ci-cloud_edit.ks \</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; --extra-args="ks=file:/rhel-7.2-ci-cloud_edit.ks no_timer_check console=tty0 console=ttyS0,115200 net.ifnames=0 biosdevname=0" \</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; --name=rhel-vagrant-7.2.x86_64 \</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; --disk ./rhel-vagrant-7.2.x86_64.qcow2,size=20,bus=virtio \</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; --ram 2048 \</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; --vcpus=2 \</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; --check-cpu \</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; --accelerate \</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; --hvm \</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; --location=$tree \</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; --nographics --noreboot #--debug </span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><span style="font-family: courier new,courier;">LIBGUESTFS_BACKEND=direct virt-sparsify --compress -o compat=0.10 --tmp ./tmp/ rhel-vagrant-7.2.x86_64.qcow2 box.img</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><span style="font-family: courier new,courier;">tar cvzf rhel72.box ./metadata.json ./Vagrantfile ./box.img</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>As you can see we launch a virt-install command injecting our custom kickstart (I've used the one coming from default rhel-cloud image creation process, look at [1] for more info).</p>
+<p>I've added some custom instruction on the kickstart for supporting vagrant customization and required packages.</p>
+<p>I've also replaced the standard reboot command (at the end of the installation) with poweroff that together with "--noreboot" option of virt-install, allow us to automate the build process.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>So, edit whatever you changed from the original setup I made for RHEL 7.2 and run the build.sh.</p>
+<p><span style="font-family: courier new,courier;"># sh build.sh</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><em>Please note: in case you created a disk of a different size you should also update the metadata.json file.</em></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>That's all! <span aria-label="Happy" class="emoticon_happy emoticon-inline" style="height:16px;width:16px;"></span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>[1] Link to original kickstart file for rhel-cloud: <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=http%3A%2F%2Fgit.app.eng.bos.redhat.com%2Fgit%2Fspin-kickstarts.git%2Ftree%2Frhel7" rel="nofollow" target="_blank">http://git.app.eng.bos.redhat.com/git/spin-kickstarts.git/tree/rhel7</a></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<h1>Manual build of a Vagrant-ready virtual machine</h1><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>This is the manual process.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<h2>Build your Vagrant box</h2><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>But now, after the boring (and so short) explanation about Vagrant we can move forward looking at how to create RHEL based Vagrant boxes.</p>
+<p>First of all we need a working installation of a Gnu/Linux system, in our case a Red Hat Enterprise Linux 6.5 on KVM.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>As we saw in the introduction we need to create a user named vagrant and to set its password and root's password to string "vagrant".</p>
+<p><span style="font-family: courier new,courier;"># adduser vagrant</span></p>
+<p><span style="font-family: courier new,courier;"># echo vagrant | passwd vagrant --stdin</span></p>
+<p><span style="font-family: courier new,courier;"># echo vagrant | passwd --stdin</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>After that we need to download and set the vagrant insecure public key needed by the tool for automatically login into the system:</p>
+<p><span style="font-family: courier new,courier;"># su - vagrant</span></p>
+<p><span style="font-family: courier new,courier;"># wget <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmitchellh%2Fvagrant%2Fmaster%2Fkeys%2Fvagrant.pub" rel="nofollow" target="_blank">https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant.pub</a></span></p>
+<p><span style="font-family: courier new,courier;"># mkdir .ssh</span></p>
+<p><span style="font-family: courier new,courier;"># mv vagrant.pub .ssh/authorized_keys</span></p>
+<p><span style="font-family: courier new,courier;"># chown -R vagrant:vagrant .ssh/</span></p>
+<p><span style="font-family: courier new,courier;"># chmod 700 .ssh</span></p>
+<p><span style="font-family: courier new,courier;"># chmod 600 .ssh/authorized_keys</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Then we have to enable vagrant user as sudoers without password (We have to change the file permission because by default the file is read-only. Then we have to remove the requirement for a tty):</p>
+<p><span style="font-family: courier new,courier;"># chmod +w /etc/sudoers</span></p>
+<p><span style="font-family: courier new,courier;"># echo "vagrant ALL=(ALL) NOPASSWD: ALL" &gt;&gt; /etc/sudoers</span></p>
+<p><span style="font-family: courier new,courier;"># perl -pi -e 's/(^Defaults\s+requiretty)/# $1/g' /etc/sudoers</span></p>
+<p><span style="font-family: courier new,courier;"># chmod -w /etc/sudoers</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Finally we have to remove any reference to our current ethernet device's mac address inside the file: <span style="font-family: courier new,courier;">/etc/udev/rules.d/70-persistent-net.rules</span>, for doing that you can easily comment out the line starting with "<span style="font-family: courier new,courier;">SUBSYSTEM==</span>".</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>That's all! Power down your virtual machine, we're ready to create our box!</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<h2>Pack your Vagrant box</h2><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Start downloading the content of <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fgithub.com%2Fadrahon%2Fvagrant-kvm%2Ftree%2Fmaster%2Fexample_box" rel="nofollow" target="_blank">https://github.com/adrahon/vagrant-kvm/tree/master/example_box</a> you have to take all the files (Vagrantfile, box.xml and metadata.json).</p>
+<p>You can do that also by a simple git clone command:</p>
+<p><span style="font-family: courier new,courier;"># git clone <a class="jive-link-external-small" href="https://mojo.redhat.com/external-link.jspa?url=https%3A%2F%2Fgithub.com%2Fadrahon%2Fvagrant-kvm.git" rel="nofollow" target="_blank">https://github.com/adrahon/vagrant-kvm.git</a> .</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Then start editing your brand new box, first of all we need to get the disk source file and place it on your working directory (pay attention: the vm should be shutted down!):</p>
+<p><span style="font-family: courier new,courier;"># sudo cp /var/lib/libvirt/images/something.qcow2 </span><span style="font-family: courier new,courier;"><strong>box.img</strong></span></p>
+<p><span style="font-family: courier new,courier;"><span style="font-family: arial,helvetica,sans-serif;">Edit also for box.img's ownership and permission according your current user.</span><br></span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Now we need to edit the file named "metadata.json" this is the one I made:</p>
+<p><span style="font-family: courier new,courier;">{</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp; "provider"&nbsp;&nbsp;&nbsp;&nbsp; : "libvirt",</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp; "format"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : "qcow2",</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp; "virtual_size" : 10</span></p>
+<p><span style="font-family: courier new,courier;">}</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Then we need to customize our Vagrantfile, this is the one I made:</p>
+<p><span style="font-family: courier new,courier;"># -*- mode: ruby -*-</span></p>
+<p><span style="font-family: courier new,courier;"># vi: set ft=ruby :</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><span style="font-family: courier new,courier;">Vagrant.configure("2") do |config|</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><span style="font-family: courier new,courier;">&nbsp; config.vm.synced_folder ".", "/vagrant", type: "rsync"</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><span style="font-family: courier new,courier;">&nbsp; # Options for libvirt vagrant provider.</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp; config.vm.provider :libvirt do |libvirt|</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; # A hypervisor name to access. Different drivers can be specified, but</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; # this version of provider creates KVM machines only. Some examples of</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; # drivers are kvm (qemu hardware accelerated), qemu (qemu emulated),</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; # xen (Xen hypervisor), lxc (Linux Containers),</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; # esx (VMware ESX), vmwarews (VMware Workstation) and more. Refer to</span></p>
+<p><span style="font-family: courier new,courier;"><span>&nbsp;&nbsp;&nbsp; # documentation for available drivers (</span><a class="jive-link-external-small" href="http://libvirt.org/drivers.html" rel="nofollow" target="_blank">http://libvirt.org/drivers.html</a><span>).</span></span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; libvirt.driver = "kvm"</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; # If use ssh tunnel to connect to Libvirt.</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; libvirt.connect_via_ssh = false</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; # The username and password to access Libvirt. Password is not used when</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; # connecting via ssh.</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; libvirt.username = "root"</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; #libvirt.password = "secret"</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; # Libvirt storage pool name, where box image and instance snapshots will</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; # be stored.</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; libvirt.storage_pool_name = "default"</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; # Set a prefix for the machines that's different than the project dir name.</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; #libvirt.default_prefix = ''</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp; end</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><span style="font-family: courier new,courier;">&nbsp; config.vm.provider :libvirt do |domain|</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; domain.memory = 2048</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; domain.cpus = 2</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; domain.nested = true</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; domain.volume_cache = 'none'</span></p>
+<p>&nbsp; end</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>end</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>We've almost complete the process! We need only to pack all the three files: "box.img metadata.json Vagrantfile"</p>
+<p><span style="font-family: courier new,courier;"># tar cvzf rhel72.box ./metadata.json ./Vagrantfile ./box.img</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Process done!</p>
+<p>We can now test the just created Vagrant box.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<h1>Testing</h1><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Finally we can try to import the brand new box though the command:</p>
+<p><span style="font-family: courier new,courier;"># vagrant box add --name rhel72 rhel72.box</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Then create a directory and try it:</p>
+<p><span style="font-family: courier new,courier;"># mkdir test-libvirt &amp;&amp; cd test-testlibvirt</span></p>
+<p><span style="font-family: courier new,courier;"># vagrant init rhel72</span></p>
+<p><span style="font-family: courier new,courier;"># vagrant up</span></p>
+<p><span style="font-family: courier new,courier;"># vagrant ssh<br></span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><span style="font-family: arial,helvetica,sans-serif;">You should see something like that:</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p><span style="font-family: courier new,courier;">[alex@freddy test-libvirt]$ vagrant init rhel72</span></p>
+<p><span style="font-family: courier new,courier;">A `Vagrantfile` has been placed in this directory. You are now</span></p>
+<p><span style="font-family: courier new,courier;">ready to `vagrant up` your first virtual environment! Please read</span></p>
+<p><span style="font-family: courier new,courier;">the comments in the Vagrantfile as well as documentation on</span></p>
+<p><span style="font-family: courier new,courier;">`vagrantup.com` for more information on using Vagrant.</span></p>
+<p><span style="font-family: courier new,courier;">[alex@freddy test-libvirt]$ vagrant up</span></p>
+<p><span style="font-family: courier new,courier;">Bringing machine 'default' up with 'libvirt' provider...</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default: Creating image (snapshot of base box volume).</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default: Creating domain with the following settings...</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default:&nbsp; -- Name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; test-libvirt_default</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default:&nbsp; -- Domain type:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; kvm</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default:&nbsp; -- Cpus:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default:&nbsp; -- Memory:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2048M</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default:&nbsp; -- Base box:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rhel72</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default:&nbsp; -- Storage pool:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; default</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default:&nbsp; -- Image:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /var/lib/libvirt/images/test-libvirt_default.img</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default:&nbsp; -- Volume Cache:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; none</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default:&nbsp; -- Kernel:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default:&nbsp; -- Initrd:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default:&nbsp; -- Graphics Type:&nbsp;&nbsp;&nbsp;&nbsp; vnc</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default:&nbsp; -- Graphics Port:&nbsp;&nbsp;&nbsp;&nbsp; 5900</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default:&nbsp; -- Graphics IP:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 127.0.0.1</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default:&nbsp; -- Graphics Password: Not defined</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default:&nbsp; -- Video Type:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cirrus</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default:&nbsp; -- Video VRAM:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 9216</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default:&nbsp; -- Keymap:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; en-us</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default:&nbsp; -- Command line :</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default: Creating shared folders metadata...</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default: Starting domain.</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default: Waiting for domain to get an IP address...</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default: Waiting for SSH to become available...</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; default:</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; default: Vagrant insecure key detected. Vagrant will automatically replace</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; default: this with a newly generated keypair for better security.</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; default:</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; default: Inserting generated public key within guest...</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; default: Removing insecure key from the guest if its present...</span></p>
+<p><span style="font-family: courier new,courier;">&nbsp;&nbsp;&nbsp; default: Key inserted! Disconnecting and reconnecting using new SSH key...</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default: Configuring and enabling network interfaces...</span></p>
+<p><span style="font-family: courier new,courier;">==&gt; default: Rsyncing folder: /home/alex/Downloads/test-libvirt/ =&gt; /vagrant</span></p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<h3>PLEASE NOTE:</h3><p>Don't forget adding to your .bash_profile the env variable selecting libvirt as your default provider.</p>
+<p>Viceversa you can set it at runtime through:</p>
+<p><span style="font-family: courier new,courier;"># VAGRANT_DEFAULT_PROVIDER=libvirt</span></p>
+<p><span style="font-family: courier new,courier;"># export VAGRANT_DEFAULT_PROVIDER</span></p>
+
