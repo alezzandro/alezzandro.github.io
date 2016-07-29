@@ -74,7 +74,7 @@ tags:
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
 <p><span style="font-family: courier new,courier;">tar cvzf rhel72.box ./metadata.json ./Vagrantfile ./box.img</span></p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
-<p>As you can see we launch a virt-install command injecting our custom kickstart (I've used the one coming from default rhel-cloud image creation process, look at [1] for more info).</p>
+<p>As you can see we launch a virt-install command injecting our custom kickstart.</p>
 <p>I've added some custom instruction on the kickstart for supporting vagrant customization and required packages.</p>
 <p>I've also replaced the standard reboot command (at the end of the installation) with poweroff that together with "--noreboot" option of virt-install, allow us to automate the build process.</p>
 <p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
