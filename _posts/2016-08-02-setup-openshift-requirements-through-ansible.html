@@ -1,0 +1,107 @@
+---
+layout: post
+title: "Setup OpenShift's requirements through Ansible"
+date: '2016-08-02T09:39:24+01:00'
+tags:
+- redhat
+- ansible
+- automate
+- management
+- setup
+- openshift
+- requirements
+- v3
+- openshift3
+- playbook
+- prereq
+---
+
+
+<img src="https://www.openshift.com/images/logos/openshift/Logotype_RH_OpenShift_wLogo_RGB_Black.png" />
+
+<p>Recently I've been involved in a OpenShift deployment for a customer's POC environment with a very time-limited constraint.</p>
+<p>For that matter I've tried to handle all the necessary manual steps with the help of Ansible.</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>PLEASE NOTE:</p>
+<p>You can launch the script from your laptop, a node outside or inside the OpenShift cluster. </p>
+<p>Anyway remember that in case you'll use one of the master nodes for example, you should manually register it to RHN, attach it to ose3 channel and install Ansible by yourself.</p>
+<p>In my case the machines are already installed (and subscribed) with Satellite6, so I don't need any subscription-manager registration task.</p>
+<p>The machines are already installed with lvm2 enabled partition schema and the default VG has enough space to handle docker lvm pool (this is why I run only docker-storage-setup without configuring the /etc/sysconfig/docker file).</p>
+<p>&nbsp;</p>
+<p>You may also find an updated version of the following file here: <a target="_blank" href="https://github.com/alezzandro/ansible-random-stuff/blob/master/playbooks/openshift_v3.2-requirements.yml">https://github.com/alezzandro/ansible-random-stuff/blob/master/playbooks/openshift_v3.2-requirements.yml</a></p>
+<p>&nbsp;</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>This is the playbook I wrote for setting up the prerequisites of OpenShift installation process:</p>
+<blockquote class="jive-quote"><p>[root@openshift01 ~]# cat init.yml</p>
+<p>- hosts: all</p>
+<p>&nbsp; tasks:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: yum clean all</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; command: yum clean all</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: subscription-manager refresh</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; command: "subscription-manager refresh"</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: Enable chosen repositories</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; command: "subscription-manager repos --disable '*' --enable rhel-7-server-rpms --enable rhel-7-server-extras-rpms --enable rhel-7-server-ose-3.2-rpms"</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: install libselinux-python</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yum: name=libselinux-python state=installed</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: install NetworkManager</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yum: name=NetworkManager state=installed</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: enable NetworkManager</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; service: name=NetworkManager enabled=true state=started</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: Install required packages</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yum:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; name: "{{ item }}"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; state: installed</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; with_items:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - wget </p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - git </p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - net-tools </p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - bind-utils </p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - iptables-services </p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - bridge-utils </p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - bash-completion</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: Update the system</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yum: state=latest name='*'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: Install atomic-openshift-utils</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yum: state=installed name=atomic-openshift-utils</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: Install docker</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yum: state=installed name='docker-1.10.3'</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: Enable insecure docker registry</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shell: sed -i "s|OPTIONS=.*|OPTIONS='--selinux-enabled --insecure-registry 172.30.0.0/16'|g" /etc/sysconfig/docker</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: docker-storage-setup</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shell: docker-storage-setup</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: enable docker service</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; service: name=docker enabled=true state=started</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>- hosts: masters</p>
+<p>&nbsp; tasks:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: Install htpasswd</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yum: state=installed name=httpd-tools</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: ensure /etc/origin/master esists</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; file: path=/etc/origin/master state=directory</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: checking if /etc/origin/master/htpasswd exists</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; stat: path=/etc/origin/master/htpasswd</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; register: p</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - name: create developer user</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shell: echo developer | htpasswd -i -c /etc/origin/master/htpasswd developer </p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; when: p.stat.exists is not defined or not p.stat.exists</p>
+</blockquote><p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p style="min-height: 8pt; padding: 0px;">&nbsp;</p>
+<p>Please comment and/or integrate it in case you make the ansible playbook smarter!</p>
+
