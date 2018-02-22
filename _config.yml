@@ -13,6 +13,10 @@ google_analytics: UA-71306763-1
 source: . 
 destination: _site
 
+plugins:
+        - jekyll-paginate
+        - jekyll-sitemap
+
 # cover: /assets/images/header-cover.png
 
 # site title, description, meta_description, meta_keywords

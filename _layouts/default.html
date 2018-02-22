@@ -11,7 +11,14 @@
       {% include banner.html %}
     {% endif %}
 
+
     <main class="wrapper container" itemprop="mainContentOfPage" itemscope="itemscope" itemtype="http://schema.org/Blog">
+      {% if page.slug == 'home' and paginator.page == 1 %}
+      <h2>Latest Medium articles:</h2>
+      <div  id="rss-feeds"></div>
+      {% endif %}
+
+      <h2>Local articles archive:</h2>
       {{ content }}
     </main>
 
