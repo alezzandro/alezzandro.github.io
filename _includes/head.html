@@ -102,6 +102,13 @@ _gaq.push(['_trackPageview']);
 
 <script>
     jQuery(function($) {
+      $("#rss-feeds").rss("https://developers.redhat.com/blog/author/aarrichi/feed/",
+      {
+              layoutTemplate: "{entries}",
+              entryTemplate:'<article class="post" itemscope="itemscope" itemtype="http://schema.org/BlogPosting" itemprop="blogPost"><header class="post-header"><h1 class="post-title"><a href="{link}" title="Permalink to {title}">{title}</a></h1></header><p><a href="{url}" title="Permalink to {title}" class="read-more">{description}</a></p><footer class="post-meta"><time datetime="{pubDate}"><i class="fa fa-calendar-o"></i> {pubDate}</time>'
+      })
+    })
+    jQuery(function($) {
       $("#rss-feeds").rss("https://medium.com/feed/@alezzandro",
       {
 	      layoutTemplate: "{entries}",
