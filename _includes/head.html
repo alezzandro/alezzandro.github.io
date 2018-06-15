@@ -102,16 +102,16 @@ _gaq.push(['_trackPageview']);
 
 <script>
     jQuery(function($) {
-      $("#rss-feeds").rss("https://developers.redhat.com/blog/author/aarrichi/feed/",
+      $("#rss-feeds").rss("https://medium.com/feed/@alezzandro",
       {
               layoutTemplate: "{entries}",
-	      entryTemplate:'<article class="post" itemscope="itemscope" itemtype="http://schema.org/BlogPosting" itemprop="blogPost"><header class="post-header"><h1 class="post-title"><a href="{url}" title="Permalink to {title}">{title}</a></h1></header><p><a href="{url}" title="Permalink to {title}" class="read-more">{shortBodyPlain}</a></p><footer class="post-meta"><time datetime="{date}"><i class="fa fa-calendar-o"></i> {date}</time>'
+              entryTemplate:'<article class="post" itemscope="itemscope" itemtype="http://schema.org/BlogPosting" itemprop="blogPost"><header class="post-header"><h1 class="post-title"><a href="{url}" title="Permalink to {title}">{title}</a></h1></header><p><a href="{url}" title="Permalink to {title}" class="read-more">{shortBodyPlain}</a></p><footer class="post-meta"><time datetime="{date}"><i class="fa fa-calendar-o"></i> {date}</time>'
       })
     })
     jQuery(function($) {
-      $("#rss-feeds").rss("https://medium.com/feed/@alezzandro",
+      $("#rss-feeds").rss("https://developers.redhat.com/blog/author/aarrichi/feed/",
       {
-	      layoutTemplate: "{entries}",
+              layoutTemplate: "{entries}",
 	      entryTemplate:'<article class="post" itemscope="itemscope" itemtype="http://schema.org/BlogPosting" itemprop="blogPost"><header class="post-header"><h1 class="post-title"><a href="{url}" title="Permalink to {title}">{title}</a></h1></header><p><a href="{url}" title="Permalink to {title}" class="read-more">{shortBodyPlain}</a></p><footer class="post-meta"><time datetime="{date}"><i class="fa fa-calendar-o"></i> {date}</time>'
       })
     })
