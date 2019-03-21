@@ -26,21 +26,21 @@ title: "#!/usr/bin/bash"
 description: "Red Hatter, avid swimmer, obstinate dreamer, healthy carrier of joy."
 meta_description: "Red Hatter, avid swimmer, obstinate dreamer, healthy carrier of joy."
 meta_keywords: "site, website, alessandro, frontend, front-end, html5, css3, javascript, jquery, seo, otimizacao, performance"
-url: http://alezzandro.com
-production_url: http://alezzandro.com
+url: https://alezzandro.com
+production_url: https://alezzandro.com
 repo: 
 disqus_shortname: "alezzandro"
 rss_path: .
 author:
   name      : Alessandro Arrichiello
-  image     : http://0.gravatar.com/avatar/6d66df818c00333ba2d3513a1b502610?s=200
+  image     : https://0.gravatar.com/avatar/6d66df818c00333ba2d3513a1b502610?s=200
   email     : alezzandro@gmail.com
-  url       : http://alezzandro.com
-  facebook  : http://facebook.com/alessandro.arrichiello
-  twitter   : http://twitter.com/alezzandro1986
+  url       : https://alezzandro.com
+  facebook  : https://facebook.com/alessandro.arrichiello
+  twitter   : https://twitter.com/alezzandro1986
   instagram : 
-  github    : http://github.com/alezzandro
-  linkedin  : http://linkedin.com/in/alessandroarrichiello
+  github    : https://github.com/alezzandro
+  linkedin  : https://linkedin.com/in/alessandroarrichiello
   bio       : "Graduated in Computer Engineering at Federico II university of Naples. He's a computer enthusiast, GNU/Linux passionate and an obstinate dreamer."
 
 # thought
