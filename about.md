@@ -3,28 +3,28 @@ layout: page
 title: About
 ---
 
-<p class="message">
-  Hey there! This page is included as an example. Feel free to customize it for your own use upon downloading. Carry on!
-</p>
+Highly motivated Linux professional with a profound understanding of various distributions (Red Hat Enterprise Linux, Slackware, Gentoo, Debian, Ubuntu and so on) since the age of 14. Proven ability to design and architect complex systems.
 
-In the novel, *The Strange Case of Dr. Jeykll and Mr. Hyde*, Mr. Poole is Dr. Jekyll's virtuous and loyal butler. Similarly, Poole is an upstanding and effective butler that helps you build Jekyll themes. It's made by [@mdo](https://twitter.com/mdo).
+**Extensive experience in:**
+- Network Monitoring and Security: Utilized Wireshark, Nmap, Metasploit, and Nessus for network analysis and penetration testing.
+- Enterprise IT Automation: Implemented configuration management (Puppet & Ansible) and continuous integration (Jenkins & Tekton) in virtualized (VMware ESXi, OpenStack, KVM) and containerized (Podman & Docker) environments.
+- Distributed Cloud Architect: Currently working with PaaS (OpenShift & Kubernetes), IaaS (OpenStack), and Hybrid Cloud Management.
 
-There are currently two themes built on Poole:
+A confident and engaging public speaker, that effectively communicates complex technical concepts to a diverse audience:
+- Thrives in sharing his knowledge and experience at large public events
+- Has presented at open-source community conferences, Red Hat public events, and even participated in public interviews with journalists
 
-* [Hyde](http://hyde.getpoole.com)
-* [Lanyon](http://lanyon.getpoole.com)
+**Active contributor to the open-source community:**
+- Regularly publishes articles on the Red Hat Developer Blog [here](https://developers.redhat.com/author/alessandro-arrichiello)
+- Maintains a GitHub profile showcasing personal projects [here](https://github.com/alezzandro)
 
-Learn more and contribute on [GitHub](https://github.com/poole).
+**Authored technical books and courses:**
+- Podman for DevOps: Containerization Reimagined (2022) - A guide to containerization using Podman
+- Learning WebRTC Application Development (2014) - A video course on WebRTC technology
 
-## Setup
+**Certified in several areas and technologies:**
+- Red Hat Certified System Administrator (RHCSA)
+- Red Hat Certified Container Specialist
+- AWS Cloud Practitioner
 
-Some fun facts about the setup of this project include:
-
-* Built for [Jekyll](http://jekyllrb.com)
-* Developed on GitHub and hosted for free on [GitHub Pages](https://pages.github.com)
-* Coded with [Sublime Text 2](http://sublimetext.com), an amazing code editor
-* Designed and developed while listening to music like [Blood Bros Trilogy](https://soundcloud.com/maddecent/sets/blood-bros-series)
-
-Have questions or suggestions? Feel free to [open an issue on GitHub](https://github.com/poole/issues/new) or [ask me on Twitter](https://twitter.com/mdo).
-
-Thanks for reading!
+Passionate about continuous learning: Currently focusing on expanding knowledge of Red Hat's MLOps platform (Open Data Hub) supporting Artificial Intelligence (AI) and Machine Learning (ML) models.
