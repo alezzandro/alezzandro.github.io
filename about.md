@@ -10,7 +10,7 @@ Highly motivated Linux professional with a profound understanding of various dis
 - Enterprise IT Automation: Implemented configuration management (Puppet & Ansible) and continuous integration (Jenkins & Tekton) in virtualized (VMware ESXi, OpenStack, KVM) and containerized (Podman & Docker) environments.
 - Distributed Cloud Architect: Currently working with PaaS (OpenShift & Kubernetes), IaaS (OpenStack), and Hybrid Cloud Management.
 
-A confident and engaging public speaker, that effectively communicates complex technical concepts to a diverse audience:
+**A confident and engaging public speaker, that effectively communicates complex technical concepts to a diverse audience:**
 - Thrives in sharing his knowledge and experience at large public events
 - Has presented at open-source community conferences, Red Hat public events, and even participated in public interviews with journalists
 
