@@ -28,4 +28,5 @@ Highly motivated Linux professional with a profound understanding of various dis
 - Red Hat Certified Container Specialist
 - AWS Cloud Practitioner
 
-Passionate about continuous learning: Currently focusing on expanding knowledge of Red Hat's MLOps platform (Open Data Hub) supporting Artificial Intelligence (AI) and Machine Learning (ML) models.
+**Passionate about continuous learning:** 
+Currently focusing on expanding knowledge of Red Hat's MLOps platform (Open Data Hub) supporting Artificial Intelligence (AI) and Machine Learning (ML) models.
