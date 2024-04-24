@@ -83,6 +83,10 @@ html {
   font-size: 2.75rem;
 }
 
+.sidebar-about img {
+  border-radius: 50%;
+}
+
 /* Sidebar nav */
 .sidebar-nav {
   margin-bottom: 1rem;
@@ -98,10 +102,6 @@ a.sidebar-nav-item:focus {
 }
 .sidebar-nav-item.active {
   font-weight: bold;
-}
-
-.sidebar-nav-item img {
-  border-radius: 50%;
 }
 
 /* Sticky sidebar
