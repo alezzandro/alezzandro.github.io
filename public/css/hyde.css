@@ -75,10 +75,6 @@ html {
   color: #fff;
 }
 
-.sidebar img {
-  border-radius: 50%;
-}
-
 /* About section */
 .sidebar-about h1 {
   color: #fff;
@@ -91,6 +87,7 @@ html {
 .sidebar-nav {
   margin-bottom: 1rem;
 }
+
 .sidebar-nav-item {
   display: block;
   line-height: 1.75;
@@ -101,6 +98,10 @@ a.sidebar-nav-item:focus {
 }
 .sidebar-nav-item.active {
   font-weight: bold;
+}
+
+.sidebar-nav-item img {
+  border-radius: 50%;
 }
 
 /* Sticky sidebar
